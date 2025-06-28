@@ -14,6 +14,8 @@ contract DeployTestnet is Script {
     }
 
     function deployEvvm() public returns (address sMateAddress) {
+        
+        console2.log(msg.sender);
         sMate = new SMate(msg.sender);
         console2.log("sMate address: ", address(sMate));
         console2.log("Evvm address: ", sMate.getEvvmAddress());

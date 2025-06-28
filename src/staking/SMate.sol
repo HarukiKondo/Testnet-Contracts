@@ -21,13 +21,14 @@ Y8a 8 8 a8P  Y8a     a8P  88    `888'    88   d8'        `8b   88       88
    ██║   ██╔══╝  ╚════██║   ██║   ██║╚██╗██║██╔══╝     ██║   
    ██║   ███████╗███████║   ██║   ██║ ╚████║███████╗   ██║   
    ╚═╝   ╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝╚══════╝   ╚═╝   
- *  @title MATE Name Service
+ *  @title Staking Mate contract
  *  @author jistro.eth ariutokintumi.eth
  *  @notice This contract is designed to register and manage usernames for
  *          the MATE metaprotocol
  */
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {AdvancedStrings} from "@EVVM/libraries/AdvancedStrings.sol";
 import {Evvm} from "@EVVM/testnet/evvm/Evvm.sol";
 import {SignatureRecover} from "@EVVM/libraries/SignatureRecover.sol";
 import {MateNameService} from "@EVVM/testnet/mns/MateNameService.sol";
@@ -152,7 +153,7 @@ contract SMate {
             revert();
         }
 
-        stakingProcess(
+        stakingUserProcess(
             _isStaking,
             goldenFisher.actual,
             _amountOfSMate,
@@ -215,7 +216,7 @@ contract SMate {
         if (!allowPresaleStaking.flag) {
             revert();
         }
-        stakingProcess(
+        stakingUserProcess(
             _isStaking,
             _user,
             1,
@@ -325,7 +326,7 @@ contract SMate {
             revert Logic(2);
         }
 
-        stakingProcess(
+        stakingUserProcess(
             _isStaking,
             _user,
             _amountOfSMate,
@@ -338,27 +339,128 @@ contract SMate {
         stakingNonce[_user][_nonce] = true;
     }
 
-    /*
-        stakingProcess es internal y solo puede ser 
-        llamada por el contrato, si el token es 0x00...01 
-        es staking, si es 0x00.002 es unstaking. 
-        Debe traer un múltiplo de 5083 para 0x00..01 o 
-        entero cualquiera para 0x00..02.
-    */
-
-    /**
-     *  @dev stakingProcess allows the contract to make a stakingProcess.
-     *  @param _isStaking boolean to check if the user is staking or unstaking
-     *  @param _user user address of the user that wants to stake/unstake
-     *  @param _amountOfSMate amount of sMATE to stake/unstake
-     *  @param _priorityFee_Evvm priority fee for the Evvm contract
-     *  @param _nonce_Evvm nonce for the Evvm contract
-     *  @param _priority_Evvm priority for the Evvm contract (true for async, false for sync)
-     *  @param _signature_Evvm signature for the Evvm contract
-     */
-    function stakingProcess(
+    function publicServiceStaking(
         bool _isStaking,
         address _user,
+        address _service,
+        uint256 _nonce,
+        uint256 _amountOfSMate,
+        bytes memory _signature,
+        uint256 _priorityFee_Evvm,
+        uint256 _nonce_Evvm,
+        bool _priority_Evvm,
+        bytes memory _signature_Evvm
+    ) external {
+        if (!allowPublicStaking.flag) {
+            revert();
+        }
+
+        uint256 size;
+
+        assembly {
+            /// @dev check the size of the opcode of the address
+            size := extcodesize(_service)
+        }
+
+        if (size == 0) {
+            revert();
+        }
+
+        if (_isStaking) {
+            if (
+                !verifyMessageSignedForPublicServiceStake(
+                    _user,
+                    _service,
+                    _isStaking,
+                    _amountOfSMate,
+                    _nonce,
+                    _signature
+                )
+            ) {
+                revert();
+            }
+        } else {
+            if (_service != _user) {
+                revert();
+            }
+        }
+
+        if (checkIfStakeNonceUsed(_user, _nonce)) {
+            revert();
+        }
+
+        stakingServiceProcess(
+            _isStaking,
+            _user,
+            _service,
+            _amountOfSMate,
+            _isStaking ? _priorityFee_Evvm : 0,
+            _isStaking ? _nonce_Evvm : 0,
+            _isStaking ? _priority_Evvm : false,
+            _isStaking ? _signature_Evvm : bytes("")
+        );
+
+        stakingNonce[_user][_nonce] = true;
+    }
+
+    function stakingServiceProcess(
+        bool _isStaking,
+        address _user,
+        address _service,
+        uint256 _amountOfSMate,
+        uint256 _priorityFee_Evvm,
+        uint256 _nonce_Evvm,
+        bool _priority_Evvm,
+        bytes memory _signature_Evvm
+    ) internal {
+        stakingBaseProcess(
+            _isStaking,
+            _user,
+            _service,
+            _amountOfSMate,
+            _priorityFee_Evvm,
+            _nonce_Evvm,
+            _priority_Evvm,
+            _signature_Evvm
+        );
+    }
+
+    function stakingUserProcess(
+        bool _isStaking,
+        address _user,
+        uint256 _amountOfSMate,
+        uint256 _priorityFee_Evvm,
+        uint256 _nonce_Evvm,
+        bool _priority_Evvm,
+        bytes memory _signature_Evvm
+    ) internal {
+        stakingBaseProcess(
+            _isStaking,
+            _user,
+            _user,
+            _amountOfSMate,
+            _priorityFee_Evvm,
+            _nonce_Evvm,
+            _priority_Evvm,
+            _signature_Evvm
+        );
+    }
+
+    /**
+     * @dev Base function that handles both service and user staking processes
+     * @param _isStaking boolean indicating if staking or unstaking
+     * @param _user address of the user paying for the transaction
+     * @param _stakingAccount address that will receive the stake/unstake
+     * @param _amountOfSMate amount of sMATE tokens
+     * @param _priorityFee_Evvm priority fee for EVVM
+     * @param _nonce_Evvm nonce for EVVM
+     * @param _priority_Evvm priority flag for EVVM
+     * @param _signature_Evvm signature for EVVM
+     */
+    function stakingBaseProcess(
+        bool _isStaking,
+        address _user,
+        address _stakingAccount,
         uint256 _amountOfSMate,
         uint256 _priorityFee_Evvm,
         uint256 _nonce_Evvm,
@@ -368,9 +470,10 @@ contract SMate {
         uint256 auxSMsteBalance;
 
         if (_isStaking) {
-            ///🮖 @dev staking process 🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖
-
-            if (getTimeToUserUnlockStakingTime(_user) > block.timestamp) {
+            if (
+                getTimeToUserUnlockStakingTime(_stakingAccount) >
+                block.timestamp
+            ) {
                 revert();
             }
 
@@ -383,36 +486,27 @@ contract SMate {
                 _signature_Evvm
             );
 
-            Evvm(EVVM_ADDRESS).pointStaker(_user, 0x01);
+            Evvm(EVVM_ADDRESS).pointStaker(_stakingAccount, 0x01);
 
-            auxSMsteBalance = userHistory[_user].length == 0
+            auxSMsteBalance = userHistory[_stakingAccount].length == 0
                 ? _amountOfSMate
-                : userHistory[_user][userHistory[_user].length - 1]
-                    .totalStaked + _amountOfSMate;
+                : userHistory[_stakingAccount][
+                    userHistory[_stakingAccount].length - 1
+                ].totalStaked + _amountOfSMate;
         } else {
-            ///🮖 @dev unstaking process 🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖🮖
-
-            /*
-            ! esto lo hacemos ya que como un unsigned integer no puede ser negativo
-            ! asi que no necesitamos verificar si el usuario tiene suficiente balance
-
-            if (getUserAmountStaked(_user) == 0) {
-                revert();
-            }
-            */
-
-            if (_amountOfSMate == getUserAmountStaked(_user)) {
+            if (_amountOfSMate == getUserAmountStaked(_stakingAccount)) {
                 if (
-                    getTimeToUserUnlockFullUnstakingTime(_user) >
+                    getTimeToUserUnlockFullUnstakingTime(_stakingAccount) >
                     block.timestamp
                 ) {
-                    revert Logic(secondsToUnllockFullUnstaking.actual);
+                    revert();
                 }
 
-                Evvm(EVVM_ADDRESS).pointStaker(_user, 0x00);
+                Evvm(EVVM_ADDRESS).pointStaker(_stakingAccount, 0x00);
             }
 
-            if (_priorityFee_Evvm != 0) {
+            // Only for user unstaking, not service
+            if (_user == _stakingAccount && _priorityFee_Evvm != 0) {
                 makePay(
                     _user,
                     _priorityFee_Evvm,
@@ -424,23 +518,23 @@ contract SMate {
             }
 
             auxSMsteBalance =
-                userHistory[_user][userHistory[_user].length - 1].totalStaked -
+                userHistory[_stakingAccount][
+                    userHistory[_stakingAccount].length - 1
+                ].totalStaked -
                 _amountOfSMate;
 
-            // Gives the user the amount in ((amount of SMate to unstake) * 5083 $MATE)
             makeCaPay(
                 MATE_TOKEN_ADDRESS,
-                _user,
+                _stakingAccount,
                 (PRICE_OF_SMATE * _amountOfSMate)
             );
         }
 
-        userHistory[_user].push(
+        userHistory[_stakingAccount].push(
             HistoryMetadata({
                 transactionType: _isStaking
                     ? bytes32(uint256(1))
                     : bytes32(uint256(2)),
-                //transactionType: _isStaking ? bytes1(0x01) : bytes1(0x02),
                 amount: _amountOfSMate,
                 timestamp: block.timestamp,
                 totalStaked: auxSMsteBalance
@@ -448,14 +542,11 @@ contract SMate {
         );
 
         if (Evvm(EVVM_ADDRESS).isMateStaker(msg.sender)) {
-            ///@dev give the reward to the fisher
             makeCaPay(
                 MATE_TOKEN_ADDRESS,
                 msg.sender,
                 (Evvm(EVVM_ADDRESS).seeMateReward() * 2) + _priorityFee_Evvm
             );
-
-            ///@dev give the priority fee to the fisher
         }
     }
 
@@ -727,6 +818,32 @@ contract SMate {
                      * else is for presaleInternalExecution
                      */
                     isExternalStaking ? "21cc1749" : "6257deec",
+                    ",",
+                    _isStaking ? "true" : "false",
+                    ",",
+                    Strings.toString(_amountOfSMate),
+                    ",",
+                    Strings.toString(_nonce)
+                ),
+                signature,
+                signer
+            );
+    }
+
+    function verifyMessageSignedForPublicServiceStake(
+        address signer,
+        address _serviceAddress,
+        bool _isStaking,
+        uint256 _amountOfSMate,
+        uint256 _nonce,
+        bytes memory signature
+    ) internal pure returns (bool) {
+        return
+            SignatureRecover.signatureVerification(
+                string.concat(
+                    "21cc1749",
+                    ",",
+                    AdvancedStrings.addressToString(_serviceAddress),
                     ",",
                     _isStaking ? "true" : "false",
                     ",",
