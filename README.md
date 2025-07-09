@@ -55,8 +55,6 @@ Deploy contracts to Arbitrum Sepolia testnet:
 make deployTestnet
 ```
 
-> **Note**: The current makefile only includes deployment to Arbitrum Sepolia. Local testnet deployment commands are referenced but not yet implemented.
-
 ## Compilation
 
 Recompile contracts:
@@ -68,35 +66,6 @@ Check contract sizes:
 ```bash
 make seeSizes
 ```
-
-## Testing
-
-> **Note**: Test commands are referenced below but not yet implemented in the makefile. The project uses Foundry for testing.
-
-<!-- 
-Future test commands to be implemented:
-```bash
-# Unit tests for EVVM contracts
-make unitTestCorrectEvvm
-make unitTestRevertEvvm
-
-# Unit tests for SMate contracts  
-make unitTestCorrectSMate
-make unitTestRevertSMate
-
-# Unit tests for MateNameService
-make unitTestCorrectMateNameService
-make unitTestRevertMateNameService
-
-# Fuzz tests
-make fuzzTestEvvmPayMultiple
-make fuzzTestMnsOffers
-make fuzzTestSMateGoldenStaking
-
-# Static analysis
-make staticAnalysis  # Will generate reportWake.txt
-```
--->
 
 ## Contributing
 
