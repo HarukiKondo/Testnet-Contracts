@@ -16,6 +16,12 @@ ARB_SEPOLIA_TESTNET_ARGS := --rpc-url $(RPC_URL_ARB_SEPOLIA) \
                             --verify \
                             --etherscan-api-key $(ETHERSCAN_API) \
 
+ETH_SEPOLIA_TESTNET_ARGS := --rpc-url $(RPC_URL_ETH_SEPOLIA) \
+                            --account defaultKey \
+                            --broadcast \
+                            --verify \
+                            --etherscan-api-key $(ETHERSCAN_API) \
+
 # Main commands
 all: clean remove install update build 
 
@@ -46,9 +52,15 @@ anvil:
 	@anvil -m 'test test test test test test test test test test test junk' --steps-tracing
 
 deployTestnet: 
-	@echo "Deploying testnet"
+	@echo "Deploying testnet on $(NETWORK)"
 	@forge clean
-	@forge script script/DeployTestnet.s.sol:DeployTestnet $(ARB_SEPOLIA_TESTNET_ARGS) -vvvvvv
+	@if [ "$(NETWORK)" = "eth" ]; then \
+		forge script script/DeployTestnet.s.sol:DeployTestnet $(ETH_SEPOLIA_TESTNET_ARGS) -vvvvvv; \
+	elif [ "$(NETWORK)" = "arb" ] || [ -z "$(NETWORK)" ]; then \
+		forge script script/DeployTestnet.s.sol:DeployTestnet $(ARB_SEPOLIA_TESTNET_ARGS) -vvvvvv; \
+	else \
+		echo "Unknown network: $(NETWORK). Use 'eth' or 'arb'"; exit 1; \
+	fi
 
 deployLocalTestnet: 
 	@echo "Deploying local testnet"
