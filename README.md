@@ -5,6 +5,22 @@
 
 The Ethereum Virtual Virtual Machine ⚙️ Infraless EVM Virtualization solving Scalability and Chain Fragmentation 🔧
 
+If you want to test or build on the EVVM contracts, this repository provides a comprehensive set of smart contracts and tools for local development, testing, and deployment.
+
+## Contract addresses
+
+- **EVVM**: [0x361b3257fC6aEf19f3Cf0ff5cD12911f80176273](https://sepolia.arbiscan.io/address/0x361b3257fc6aef19f3cf0ff5cd12911f80176273#code)
+
+- **MateNameService**: [0x64d5C5f667AeefDa7E926b66CEa384F529c01372](https://sepolia.arbiscan.io/address/0x64d5c5f667aeefda7e926b66cea384f529c01372#code)
+
+- **SMate**: [0xeF3A784e195a224BE1d5525E23E06E3A029022b7](https://sepolia.arbiscan.io/address/0xef3a784e195a224be1d5525e23e06e3a029022b7#code)
+
+- **Estimator**: [0xdA441Cd599F8d61bc809119EED847A0fE7c469aa](https://sepolia.arbiscan.io/address/0xda441cd599f8d61bc809119eed847a0fe7c469aa#code)
+
+> **Note**: These contracts are deployed on Arbitrum Sepolia testnet.
+
+
+
 ## Prerequisites
 
 - [Foundry](https://getfoundry.sh/)
@@ -30,14 +46,16 @@ make install
 Start local Anvil chain:
 ```bash
 make anvil
-# In another terminal:
-make mock  # Deploy all mock contracts
 ```
 
-Deploy local testnet contracts:
+## Deployment
+
+Deploy contracts to Arbitrum Sepolia testnet:
 ```bash
-make deployLocalTestnet
+make deployTestnet
 ```
+
+> **Note**: The current makefile only includes deployment to Arbitrum Sepolia. Local testnet deployment commands are referenced but not yet implemented.
 
 ## Compilation
 
@@ -46,56 +64,39 @@ Recompile contracts:
 make compile
 ```
 
-## Deployment
-
-Deploy contracts to the Ethereum Sepolia testnet:
+Check contract sizes:
 ```bash
-make deployTestnet
+make seeSizes
 ```
 
 ## Testing
 
-Run unit tests for EVVM contracts:
+> **Note**: Test commands are referenced below but not yet implemented in the makefile. The project uses Foundry for testing.
+
+<!-- 
+Future test commands to be implemented:
 ```bash
+# Unit tests for EVVM contracts
 make unitTestCorrectEvvm
 make unitTestRevertEvvm
-```
 
-Run unit tests for SMate contracts:
-```bash
+# Unit tests for SMate contracts  
 make unitTestCorrectSMate
 make unitTestRevertSMate
-```
 
-Run unit tests for MateNameService:
-```bash
+# Unit tests for MateNameService
 make unitTestCorrectMateNameService
 make unitTestRevertMateNameService
-```
 
-## Fuzz Testing
-
-Run fuzz tests for EVVM:
-```bash
+# Fuzz tests
 make fuzzTestEvvmPayMultiple
-```
-
-Run fuzz tests for MateNameService:
-```bash
 make fuzzTestMnsOffers
-```
-
-Run fuzz tests for SMate:
-```bash
 make fuzzTestSMateGoldenStaking
-```
 
-## Static Analysis
-
-Run static analysis and generate a report:
-```bash
-make staticAnalysis  # Generates reportWake.txt
+# Static analysis
+make staticAnalysis  # Will generate reportWake.txt
 ```
+-->
 
 ## Contributing
 
