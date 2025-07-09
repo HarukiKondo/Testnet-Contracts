@@ -5,7 +5,6 @@
 
 The Ethereum Virtual Virtual Machine ⚙️ Infraless EVM Virtualization solving Scalability and Chain Fragmentation 🔧
 
-
 ## Prerequisites
 
 - [Foundry](https://getfoundry.sh/)
@@ -35,6 +34,11 @@ make anvil
 make mock  # Deploy all mock contracts
 ```
 
+Deploy local testnet contracts:
+```bash
+make deployLocalTestnet
+```
+
 ## Compilation
 
 Recompile contracts:
@@ -42,47 +46,53 @@ Recompile contracts:
 make compile
 ```
 
+## Deployment
+
+Deploy contracts to the Ethereum Sepolia testnet:
+```bash
+make deployTestnet
+```
 
 ## Testing
 
-There is some example testing scripts in the `test` directory. If you want to check more tests, please check the [Makefile](https://github.com/EVVM-org/EVVM-Contracts/blob/main/makefile) file.
-
-### EVVM Contracts
+Run unit tests for EVVM contracts:
 ```bash
-# All tests
 make unitTestCorrectEvvm
 make unitTestRevertEvvm
-
-# Individual tests
-make unitTestCorrectEvvmPayMultiple
-make unitTestRevertEvvmPayMultiple_syncExecution
 ```
 
-### SMate Contracts
+Run unit tests for SMate contracts:
 ```bash
 make unitTestCorrectSMate
 make unitTestRevertSMate
 ```
 
-### MateNameService
+Run unit tests for MateNameService:
 ```bash
 make unitTestCorrectMateNameService
 make unitTestRevertMateNameService
 ```
 
-### Fuzz Testing
+## Fuzz Testing
+
+Run fuzz tests for EVVM:
 ```bash
-# EVVM
 make fuzzTestEvvmPayMultiple
+```
 
-# MNS
+Run fuzz tests for MateNameService:
+```bash
 make fuzzTestMnsOffers
+```
 
-# SMate
+Run fuzz tests for SMate:
+```bash
 make fuzzTestSMateGoldenStaking
 ```
 
 ## Static Analysis
+
+Run static analysis and generate a report:
 ```bash
 make staticAnalysis  # Generates reportWake.txt
 ```
@@ -96,6 +106,3 @@ make staticAnalysis  # Generates reportWake.txt
 
 > **Security Note**: Never commit real private keys. Use test credentials only.
 
----
-
-*This is a temporary README - Final documentation pending project completion*
