@@ -25,6 +25,5 @@ wake-coverage.cov
 
 reportWake.txt
 
-# IDE files
-/.vscode/*.code-workspace
+/.vscode/
 *.code-workspace
