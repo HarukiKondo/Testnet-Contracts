@@ -13,7 +13,6 @@ remappings = [
     '@uniswap/v3-core/contracts/=lib/v3-core/contracts/',
     '@EVVM/testnet/=src/',
     '@EVVM/libraries/=src/libraries/',
-    'Tesnet-contracts/=src/testnet/',
 ]
 optimizer-runs = 300
 via_ir = true
