@@ -2,12 +2,23 @@
 
 ![](https://github.com/user-attachments/assets/08d995ee-7512-42e4-a26c-0d62d2e8e0bf)
 
-
 The Ethereum Virtual Virtual Machine ⚙️ Infraless EVM Virtualization solving Scalability and Chain Fragmentation 🔧
 
 If you want to test or build on the EVVM contracts, this repository provides a comprehensive set of smart contracts and tools for local development, testing, and deployment.
 
 ## Contract addresses
+
+### Ethereum Sepolia Testnet
+
+- **EVVM**: [0x5A389465baD0AEaBf8601F60F905a5cc79140490](https://sepolia.etherscan.io/address/0x5a389465bad0aeabf8601f60f905a5cc79140490#code)
+
+- **MateNameService**: [0xa38e93cAaEC44B8D9d9CfaA902EC6B4782B0e3E1](https://sepolia.etherscan.io/address/0xa38e93caaec44b8d9d9cfaa902ec6b4782b0e3e1#code)
+
+- **SMate**: [0x5082462834FD7790B8BC255AF02faA58584a1d77](https://sepolia.etherscan.io/address/0x5082462834fd7790b8bc255af02faa58584a1d77#code)
+
+- **Estimator**: [0xB686Be759e45D2f85Ce8C5A25198DD312eF5b083](https://sepolia.etherscan.io/address/0xb686be759e45d2f85ce8c5a25198dd312ef5b083#code)
+
+### Arbitrum Sepolia Testnet
 
 - **EVVM**: [0x361b3257fC6aEf19f3Cf0ff5cD12911f80176273](https://sepolia.arbiscan.io/address/0x361b3257fc6aef19f3cf0ff5cd12911f80176273#code)
 
@@ -16,9 +27,6 @@ If you want to test or build on the EVVM contracts, this repository provides a c
 - **SMate**: [0xeF3A784e195a224BE1d5525E23E06E3A029022b7](https://sepolia.arbiscan.io/address/0xef3a784e195a224be1d5525e23e06e3a029022b7#code)
 
 - **Estimator**: [0xdA441Cd599F8d61bc809119EED847A0fE7c469aa](https://sepolia.arbiscan.io/address/0xda441cd599f8d61bc809119eed847a0fe7c469aa#code)
-
-> **Note**: These contracts are deployed on Arbitrum Sepolia testnet.
-
 
 
 ## Prerequisites
@@ -37,6 +45,7 @@ make install
 ## Installation
 
 Install dependencies and compile contracts:
+
 ```bash
 make install
 ```
@@ -44,25 +53,41 @@ make install
 ## Local Development
 
 Start local Anvil chain:
+
 ```bash
 make anvil
 ```
 
 ## Deployment
 
-Deploy contracts to Arbitrum Sepolia testnet:
+Deploy contracts to Ethereum Sepolia testnet:
+
 ```bash
-make deployTestnet
+make deployTestnet NETWORK=eth
+```
+
+Deploy contracts to Arbitrum Sepolia testnet:
+
+```bash
+make deployTestnet NETWORK=arb
+```
+
+## Compilation
+
+```bash
+make deployTestnet NETWORK=eth
 ```
 
 ## Compilation
 
 Recompile contracts:
+
 ```bash
 make compile
 ```
 
 Check contract sizes:
+
 ```bash
 make seeSizes
 ```
@@ -75,4 +100,3 @@ make seeSizes
 4. Submit PR with detailed description
 
 > **Security Note**: Never commit real private keys. Use test credentials only.
-
