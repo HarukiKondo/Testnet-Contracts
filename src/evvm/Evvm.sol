@@ -45,20 +45,12 @@ contract Evvm is EvvmStorage {
 
         maxAmountToWithdraw.current = 0.1 ether;
 
-        MateNameService mateNameService = new MateNameService(
-            address(this),
-            _initialOwner
-        );
+        balances[_sMateContractAddress][mate.mateAddress] = seeMateReward() * 2;
 
-        balances[address(mateNameService)][mate.mateAddress] = 10000 * 10 ** 18;
+        stakerList[mateNameServiceAddress] = 0x01;
+        stakerList[_sMateContractAddress] = 0x01;
 
-        balances[_sMateContractAddress][mate.mateAddress] = seeMateReward() * 2 ;
-
-        mateNameServiceAddress = address(mateNameService);
-
-        pointStaker(mateNameServiceAddress, 0x01);
-
-        pointStaker(sMateContractAddress, 0x01);
+        breakerSetMateNameServiceAddress = 0x01;
     }
 
     fallback() external {
@@ -100,11 +92,17 @@ contract Evvm is EvvmStorage {
         }
     }
 
-    /**
-     * @dev _addBalance, _addMateToTotalSupply and _setPointStaker are debug functions
-     *       DO NOT USE IN PRODUCTION!!!!!!!
-     */
-    function _addBalance(
+    function _setMateNameServiceAddress(
+        address _mateNameServiceAddress
+    ) external {
+        if (breakerSetMateNameServiceAddress == 0x00) {
+            revert();
+        }
+        mateNameServiceAddress = _mateNameServiceAddress;
+        balances[mateNameServiceAddress][mate.mateAddress] = 10000 * 10 ** 18;
+    }
+
+    function addBalance(
         address user,
         address token,
         uint256 quantity

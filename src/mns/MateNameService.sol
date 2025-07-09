@@ -129,26 +129,6 @@ contract MateNameService {
     }
 
     /**
-     * @dev _setIdentityBaseMetadata and _setIdentityCustomMetadata are debug functions
-     *      DO NOT USE IN PRODUCTION!!!!!!!
-     */
-
-    function _setIdentityBaseMetadata(
-        string memory _identity,
-        IdentityBaseMetadata memory _identityBaseMetadata
-    ) external {
-        identityDetails[_identity] = _identityBaseMetadata;
-    }
-
-    function _setIdentityCustomMetadata(
-        string memory _identity,
-        uint256 _numberKey,
-        string memory _customValue
-    ) external {
-        identityCustomMetadata[_identity][_numberKey] = _customValue;
-    }
-
-    /**
      *  @notice This function is used to pre-register a username to avoid
      *          front-running attacks.
      *  @param _user the address of the user who wants to pre-register

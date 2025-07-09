@@ -35,11 +35,6 @@ import {MateNameService} from "@EVVM/testnet/mns/MateNameService.sol";
 import {Estimator} from "@EVVM/testnet/staking/Estimator.sol";
 
 contract SMate {
-    error Time(uint256);
-    error Logic(uint256 code);
-
-    using SignatureRecover for *;
-
     struct presaleStakerMetadata {
         bool isAllow;
         uint256 stakingAmount;
@@ -102,6 +97,8 @@ contract SMate {
 
     mapping(address => HistoryMetadata[]) private userHistory;
 
+    bytes1 internal breakerAddEstimator;
+
     modifier onlyOwner() {
         if (msg.sender != admin.actual) {
             revert();
@@ -112,27 +109,27 @@ contract SMate {
     constructor(address initialAdmin) {
         admin.actual = initialAdmin;
 
-        Evvm evvm = new Evvm(initialAdmin, address(this));
-
-        EVVM_ADDRESS = address(evvm);
 
         goldenFisher.actual = 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc;
 
-        allowPublicStaking.flag = false;
-        allowPresaleStaking.flag = false;
+        allowPublicStaking.flag = true;
+        allowPresaleStaking.flag = true;
 
         secondsToUnlockStaking.actual = 0;
 
         secondsToUnllockFullUnstaking.actual = 21 days;
 
-        estimator.actual = address(
-            new Estimator(
-                0x976EA74026E726554dB657fA54763abd0C3a0aa9,
-                EVVM_ADDRESS,
-                address(this),
-                initialAdmin
-            )
-        );
+        breakerAddEstimator = 0x01;
+    }
+
+    function _addEstimator(
+        address _estimator
+    ) external {
+        if (breakerAddEstimator == 0x00) {
+            revert();
+        }
+        estimator.actual = _estimator;
+        breakerAddEstimator = 0x00;
     }
 
     /**
@@ -205,10 +202,10 @@ contract SMate {
                 _signature
             )
         ) {
-            revert Logic(1);
+            revert();
         }
         if (checkIfStakeNonceUsed(_user, _nonce)) {
-            revert Logic(2);
+            revert();
         }
 
         presaleClaims(_isStaking, _user);
@@ -319,11 +316,11 @@ contract SMate {
                 _signature
             )
         ) {
-            revert Logic(1);
+            revert();
         }
 
         if (checkIfStakeNonceUsed(_user, _nonce)) {
-            revert Logic(2);
+            revert();
         }
 
         stakingUserProcess(

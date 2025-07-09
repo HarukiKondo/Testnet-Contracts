@@ -40,6 +40,8 @@ abstract contract EvvmStorage is EvvmStructs {
     address whitelistTokenToBeAdded_pool;
     uint256 whitelistTokenToBeAdded_dateToSet;
 
+    bytes1 breakerSetMateNameServiceAddress;
+
     MateTokenomicsMetadata mate =
         MateTokenomicsMetadata({
             totalSupply: 2033333333000000000000000000,

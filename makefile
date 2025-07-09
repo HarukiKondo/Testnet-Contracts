@@ -14,11 +14,21 @@ ARB_SEPOLIA_TESTNET_ARGS := --rpc-url $(RPC_URL_ARB_SEPOLIA) \
                             --account defaultKey \
                             --broadcast \
                             --verify \
-                            --verifier-url "https://api.etherscan.io/v2/api?chainid=421614" \
                             --etherscan-api-key $(ETHERSCAN_API) \
 
 # Main commands
 all: clean remove install update build 
+
+verify: 
+	@forge verify-contract "0xF66464ccf2d0e56DFA15572c122C6474B0A1c82C" \
+		src/staking/SMate.sol:SMate \
+        --chain-id 421614 \
+        --verifier etherscan \
+        --etherscan-api-key $(ETHERSCAN_API) \
+        --compiler-version v0.8.28+commit.7893614a \
+		--watch \
+		--num-of-optimizations 300
+
 
 install:
 	@echo "Installing libraries"
@@ -26,6 +36,9 @@ install:
 	@forge compile --via-ir
 
 compile:
+	@forge b --via-ir
+
+seeSizes:
 	@forge b --via-ir --sizes
 
 anvil:
@@ -34,10 +47,12 @@ anvil:
 
 deployTestnet: 
 	@echo "Deploying testnet"
-	@forge script script/DeployTestnet.s.sol:DeployTestnet $(ARB_SEPOLIA_TESTNET_ARGS) -vvvv
+	@forge clean
+	@forge script script/DeployTestnet.s.sol:DeployTestnet $(ARB_SEPOLIA_TESTNET_ARGS) -vvvvvv
 
 deployLocalTestnet: 
 	@echo "Deploying local testnet"
+	@forge clean
 	@forge script script/DeployLocalTestnet.s.sol:DeployLocalTestnet $(ANVIL_ARGS) -vvvv
 
 
