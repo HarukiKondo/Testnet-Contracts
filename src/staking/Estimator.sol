@@ -24,7 +24,6 @@ MMMMMMMMMMMM
 
 import {SMate} from "@EVVM/testnet/staking/SMate.sol";
 import {Evvm} from "@EVVM/testnet/evvm/Evvm.sol";
-import "forge-std/console2.sol";
 
 contract Estimator {
     struct AddressTypeProposal {
@@ -133,24 +132,15 @@ contract Estimator {
         );
 
         for (uint256 i = 0; i < size; i++) {
-            h = SMate(addressSMate.actual).getAddressHistoryByIndex(
-                _user,
-                i
-            );
+            h = SMate(addressSMate.actual).getAddressHistoryByIndex(_user, i);
 
             if (size == 1) totSmLast = h.totalStaked;
-
-            console2.log("totSmLast", totSmLast);
 
             if (h.timestamp > epoch.tFinal) {
                 if (totSmLast > 0) sumSmT += (epoch.tFinal - tLast) * totSmLast;
 
                 idToOverwrite = i;
-                console2.log("h.timestamp > epoch.tFinal happened");
-                console2.log(h.timestamp, ">", epoch.tFinal);
-                console2.log("i", i);
 
-                console2.log("sumSmT", sumSmT);
                 break;
             }
 
@@ -158,15 +148,11 @@ contract Estimator {
 
             if (totSmLast > 0) sumSmT += (h.timestamp - tLast) * totSmLast;
 
-            console2.log("i", i);
-
-            console2.log("sumSmT", sumSmT);
             tLast = h.timestamp;
             totSmLast = h.totalStaked;
             idToOverwrite = i;
         }
 
-        console2.log("for loop ended ---");
         /**
          * @notice to get averageSm the formula is
          *              __ n
@@ -194,10 +180,6 @@ contract Estimator {
 
         timestampToOverwrite = epoch.tFinal;
 
-        console2.log("sumSmT", sumSmT);
-        console2.log("Average SM", averageSm);
-        console2.log("Estimation", amountTotalToBeRewarded);
-
         epoch.totalPool -= amountTotalToBeRewarded;
         epoch.totalStaked -= h.totalStaked;
     }
@@ -206,9 +188,7 @@ contract Estimator {
     // Admin functions
     //⎼⎻⎺⎺⎻⎼⎽⎽⎼⎻⎺⎺⎻⎼⎽⎽⎼⎻⎺⎺⎻⎼⎽⎼⎻⎺⎺⎻⎼⎽⎽⎼⎻⎺⎺⎻⎼⎽⎽⎼⎻⎺⎺⎻⎼⎽⎼⎻⎺⎺⎻⎼⎽⎽⎼⎻⎺⎺⎻⎼⎽⎽⎼⎻⎺⎺⎻⎼⎽⎼⎻⎺⎺⎻
 
-    function setActivatorProposal(
-        address _proposal
-    ) external onlyActivator {
+    function setActivatorProposal(address _proposal) external onlyActivator {
         activator.proposal = _proposal;
         activator.timeToAccept = block.timestamp + 1 days;
     }
@@ -226,9 +206,7 @@ contract Estimator {
         activator.timeToAccept = 0;
     }
 
-    function setEvvmAddressProposal(
-        address _proposal
-    ) external onlyAdmin {
+    function setEvvmAddressProposal(address _proposal) external onlyAdmin {
         evvmAddress.proposal = _proposal;
         evvmAddress.timeToAccept = block.timestamp + 1 days;
     }
@@ -246,9 +224,7 @@ contract Estimator {
         evvmAddress.timeToAccept = 0;
     }
 
-    function setAddressSMateProposal(
-        address _proposal
-    ) external onlyAdmin {
+    function setAddressSMateProposal(address _proposal) external onlyAdmin {
         addressSMate.proposal = _proposal;
         addressSMate.timeToAccept = block.timestamp + 1 days;
     }
@@ -266,9 +242,7 @@ contract Estimator {
         addressSMate.timeToAccept = 0;
     }
 
-    function setAdminProposal(
-        address _proposal
-    ) external onlyAdmin {
+    function setAdminProposal(address _proposal) external onlyAdmin {
         admin.proposal = _proposal;
         admin.timeToAccept = block.timestamp + 1 days;
     }
@@ -302,7 +276,11 @@ contract Estimator {
         return epochId;
     }
 
-    function getActivatorMetadata() external view returns (AddressTypeProposal memory) {
+    function getActivatorMetadata()
+        external
+        view
+        returns (AddressTypeProposal memory)
+    {
         return activator;
     }
 
@@ -322,11 +300,13 @@ contract Estimator {
         return addressSMate;
     }
 
-    function getAdminMetadata() external view returns (AddressTypeProposal memory) {
+    function getAdminMetadata()
+        external
+        view
+        returns (AddressTypeProposal memory)
+    {
         return admin;
     }
-
-
 
     function simulteEstimation(
         address _user
@@ -351,10 +331,7 @@ contract Estimator {
         );
 
         for (uint256 i = 0; i < size; i++) {
-            h = SMate(addressSMate.actual).getAddressHistoryByIndex(
-                _user,
-                i
-            );
+            h = SMate(addressSMate.actual).getAddressHistoryByIndex(_user, i);
 
             if (h.timestamp > epoch.tFinal) {
                 if (size == 1) totSmLast = h.totalStaked;
@@ -383,6 +360,4 @@ contract Estimator {
 
         timestampToOverwrite = epoch.tFinal;
     }
-
-
 }
