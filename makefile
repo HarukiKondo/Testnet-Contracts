@@ -25,17 +25,6 @@ ETH_SEPOLIA_TESTNET_ARGS := --rpc-url $(RPC_URL_ETH_SEPOLIA) \
 # Main commands
 all: clean remove install update build 
 
-verify: 
-	@forge verify-contract "0xF66464ccf2d0e56DFA15572c122C6474B0A1c82C" \
-		src/staking/SMate.sol:SMate \
-        --chain-id 421614 \
-        --verifier etherscan \
-        --etherscan-api-key $(ETHERSCAN_API) \
-        --compiler-version v0.8.28+commit.7893614a \
-		--watch \
-		--num-of-optimizations 300
-
-
 install:
 	@echo "Installing libraries"
 	@npm install
