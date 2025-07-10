@@ -74,7 +74,7 @@ contract SMate {
         uint256 timeToAccept;
     }
 
-    address private immutable EVVM_ADDRESS;
+    address private EVVM_ADDRESS;
 
     uint256 private constant LIMIT_PRESALE_STAKER = 800;
     uint256 private presaleStakerCount;
@@ -97,7 +97,7 @@ contract SMate {
 
     mapping(address => HistoryMetadata[]) private userHistory;
 
-    bytes1 internal breakerAddEstimator;
+    bytes1 internal breakerSetupEstimatorAndEvvm;
 
     modifier onlyOwner() {
         if (msg.sender != admin.actual) {
@@ -106,11 +106,10 @@ contract SMate {
         _;
     }
 
-    constructor(address initialAdmin) {
+    constructor(address initialAdmin, address initialGoldenFisher) {
         admin.actual = initialAdmin;
 
-
-        goldenFisher.actual = 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc;
+        goldenFisher.actual = initialGoldenFisher;
 
         allowPublicStaking.flag = true;
         allowPresaleStaking.flag = true;
@@ -119,17 +118,19 @@ contract SMate {
 
         secondsToUnllockFullUnstaking.actual = 21 days;
 
-        breakerAddEstimator = 0x01;
+        breakerSetupEstimatorAndEvvm = 0x01;
     }
 
-    function _addEstimator(
-        address _estimator
+    function _setupEstimatorAndEvvm(
+        address _estimator,
+        address _evvm
     ) external {
-        if (breakerAddEstimator == 0x00) {
+        if (breakerSetupEstimatorAndEvvm == 0x00) {
             revert();
         }
         estimator.actual = _estimator;
-        breakerAddEstimator = 0x00;
+        EVVM_ADDRESS = _evvm;
+        breakerSetupEstimatorAndEvvm = 0x00;
     }
 
     /**

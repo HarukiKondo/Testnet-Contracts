@@ -13,16 +13,18 @@ contract DeployTestnet is Script {
     Estimator estimator;
     MateNameService mateNameService;
     address admin = 0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309;
+    address goldenFisher = 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc;
+    address activator = 0x976EA74026E726554dB657fA54763abd0C3a0aa9;
 
     function setUp() public {}
 
     function run() public {
         vm.startBroadcast();
 
-        sMate = new SMate(admin);
+        sMate = new SMate(admin, goldenFisher);
         evvm = new Evvm(admin, address(sMate));
         estimator = new Estimator(
-            0x976EA74026E726554dB657fA54763abd0C3a0aa9,
+            activator,
             address(evvm),
             address(sMate),
             admin
@@ -32,8 +34,8 @@ contract DeployTestnet is Script {
             admin
         );
 
-        sMate._addEstimator(address(estimator));
-        evvm._setMateNameServiceAddress(address(mateNameService));
+        sMate._setupEstimatorAndEvvm(address(estimator), address(evvm));
+        evvm._setupMateNameServiceAddress(address(mateNameService));
 
         vm.stopBroadcast();
 

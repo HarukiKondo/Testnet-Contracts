@@ -47,11 +47,23 @@ contract Evvm is EvvmStorage {
 
         balances[_sMateContractAddress][mate.mateAddress] = seeMateReward() * 2;
 
-        stakerList[mateNameServiceAddress] = 0x01;
+        
         stakerList[_sMateContractAddress] = 0x01;
 
-        breakerSetMateNameServiceAddress = 0x01;
+        breakerSetupMateNameServiceAddress = 0x01;
     }
+
+    function _setupMateNameServiceAddress(
+        address _mateNameServiceAddress
+    ) external {
+        if (breakerSetupMateNameServiceAddress == 0x00) {
+            revert();
+        }
+        mateNameServiceAddress = _mateNameServiceAddress;
+        balances[mateNameServiceAddress][mate.mateAddress] = 10000 * 10 ** 18;
+        stakerList[mateNameServiceAddress] = 0x01;
+    }
+
 
     fallback() external {
         if (currentImplementation == address(0)) revert();
@@ -92,16 +104,7 @@ contract Evvm is EvvmStorage {
         }
     }
 
-    function _setMateNameServiceAddress(
-        address _mateNameServiceAddress
-    ) external {
-        if (breakerSetMateNameServiceAddress == 0x00) {
-            revert();
-        }
-        mateNameServiceAddress = _mateNameServiceAddress;
-        balances[mateNameServiceAddress][mate.mateAddress] = 10000 * 10 ** 18;
-    }
-
+    
     function addBalance(
         address user,
         address token,
