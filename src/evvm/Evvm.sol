@@ -296,7 +296,8 @@ contract Evvm is EvvmStorage {
         ) revert ErrorsLib.InvalidSignature();
 
         if (executor != address(0)) {
-            if (msg.sender != executor) revert ErrorsLib.SenderIsNotTheExecutor();
+            if (msg.sender != executor)
+                revert ErrorsLib.SenderIsNotTheExecutor();
         }
 
         if (asyncUsedNonce[from][nonce]) revert ErrorsLib.InvalidAsyncNonce();
@@ -556,9 +557,8 @@ contract Evvm is EvvmStorage {
             }
         }
 
-        if (isMateStaker(msg.sender)) {
+        if (isMateStaker(msg.sender))
             _giveMateReward(msg.sender, successfulTransactions);
-        }
     }
 
     function dispersePay(
@@ -667,14 +667,11 @@ contract Evvm is EvvmStorage {
             size := extcodesize(from)
         }
 
-        if (size == 0) {
-            revert();
-        }
+        if (size == 0) revert ErrorsLib.NotAnCA();
 
         uint256 acomulatedAmount = 0;
-        if (balances[msg.sender][token] < amount) {
-            revert();
-        }
+        if (balances[msg.sender][token] < amount)
+            revert ErrorsLib.InsufficientBalance();
 
         balances[msg.sender][token] -= amount;
 
@@ -721,14 +718,14 @@ contract Evvm is EvvmStorage {
         if (
             token == mate.mateAddress ||
             balances[user][token] < amount + priorityFee
-        ) {
-            revert();
-        }
+        ) revert ErrorsLib.InsufficientBalance();
 
         if (token == ETH_ADDRESS) {
-            if (amount > maxAmountToWithdraw.current) {
-                revert();
-            }
+            if (amount > maxAmountToWithdraw.current)
+                revert ErrorsLib.InvalidAmount(
+                    amount,
+                    maxAmountToWithdraw.current
+                );
         }
 
         balances[user][token] -= (amount + priorityFee);
