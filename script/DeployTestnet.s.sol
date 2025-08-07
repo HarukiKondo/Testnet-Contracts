@@ -2,40 +2,49 @@
 pragma solidity ^0.8.13;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {Evvm} from "@EVVM/testnet/evvm/Evvm.sol";
-import {SMate} from "@EVVM/testnet/staking/SMate.sol";
-import {Estimator} from "@EVVM/testnet/staking/Estimator.sol";
-import {MateNameService} from "@EVVM/testnet/mns/MateNameService.sol";
+import {Evvm} from "@EVVM/testnet/contracts/evvm/Evvm.sol";
+import {Staking} from "@EVVM/testnet/contracts/staking/Staking.sol";
+import {Estimator} from "@EVVM/testnet/contracts/staking/Estimator.sol";
+import {NameService} from "@EVVM/testnet/contracts/nameService/NameService.sol";
+import {EvvmStructs} from "@EVVM/testnet/contracts/evvm/lib/EvvmStructs.sol";
 
 contract DeployTestnet is Script {
-    SMate sMate;
+    Staking sMate;
     Evvm evvm;
     Estimator estimator;
-    MateNameService mateNameService;
+    NameService nameService;
     address admin = 0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309;
-    address goldenFisher = 0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc;
-    address activator = 0x976EA74026E726554dB657fA54763abd0C3a0aa9;
+    address goldenFisher = 0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309;
+    address activator = 0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309;
+    EvvmStructs.EvvmMetadata evvmMetadata =
+        EvvmStructs.EvvmMetadata({
+            EvvmName: "EVVM",
+            EvvmID: abi.encodePacked(uint256(1)),
+            principalTokenName: "Mate Token",
+            principalTokenSymbol: "MATE",
+            principalTokenAddress: 0x0000000000000000000000000000000000000001,
+            totalSupply: 2033333333000000000000000000,
+            eraTokens: 2033333333000000000000000000 / 2,
+            reward: 5000000000000000000
+        });
 
     function setUp() public {}
 
     function run() public {
         vm.startBroadcast();
 
-        sMate = new SMate(admin, goldenFisher);
-        evvm = new Evvm(admin, address(sMate));
+        sMate = new Staking(admin, goldenFisher);
+        evvm = new Evvm(admin, address(sMate), evvmMetadata);
         estimator = new Estimator(
             activator,
             address(evvm),
             address(sMate),
             admin
         );
-        mateNameService = new MateNameService(
-            address(evvm),
-            admin
-        );
+        nameService = new NameService(address(evvm), admin);
 
         sMate._setupEstimatorAndEvvm(address(estimator), address(evvm));
-        evvm._setupMateNameServiceAddress(address(mateNameService));
+        evvm._setupNameServiceAddress(address(nameService));
 
         vm.stopBroadcast();
 

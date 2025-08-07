@@ -13,7 +13,7 @@ remappings = [
     "@EVVM/interfaces/=src/interfaces/",
     "@EVVM/core/=src/production/core/",
     "@EVVM/EVVM-solidity-library/==lib/EVVM-solidity-library/src/",
-    "@EVVM/playground/=src/mock/",
+    "@EVVM/testnet/=src/mock/",
     "ds-test/=lib/forge-std/lib/ds-test/src/",
     "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
     "forge-std/=lib/forge-std/src/",

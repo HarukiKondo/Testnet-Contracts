@@ -23,7 +23,7 @@ abstract contract EvvmStructs {
         uint256 amount;
         uint256 priorityFee;
         uint256 nonce;
-        bool priority;
+        bool priorityFlag;
         address executor;
         bytes signature;
     }
@@ -55,11 +55,15 @@ abstract contract EvvmStructs {
         address uniswapPool;
     }
 
-    struct MateTokenomicsMetadata {
+    struct EvvmMetadata {
+        string EvvmName;
+        bytes EvvmID;
+        string principalTokenName;
+        string principalTokenSymbol;
+        address principalTokenAddress;
         uint256 totalSupply;
         uint256 eraTokens;
         uint256 reward;
-        address mateAddress;
     }
 
     struct AddressTypeProposal {

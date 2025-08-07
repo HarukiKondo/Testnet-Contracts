@@ -12,30 +12,32 @@ EVVM provides a comprehensive set of smart contracts and tools for scalable, mod
 - Contribute to the evolution of the EVVM protocol
 
 ## Repository Structure
-- `src/evvm/` — Core EVVM contracts and storage
-- `src/mns/` — MateNameService (MNS) contracts
-- `src/staking/` — Staking and Estimator contracts
-- `src/libraries/` — Shared Solidity libraries
+- `src/contracts/evvm/` — Core EVVM contracts and storage
+- `src/contracts/nameService/` — NameService contracts for domain management
+- `src/contracts/staking/` — Staking and Estimator contracts
+- `src/lib/` — Shared Solidity libraries (AdvancedStrings, SignatureRecover, etc.)
 - `script/` — Deployment and automation scripts (e.g., `DeployTestnet.s.sol`)
-- `test/` — (If present) Test contracts for local and CI validation
+- `lib/` — External dependencies (OpenZeppelin, Uniswap v3, forge-std)
+- `broadcast/` — Foundry deployment artifacts and transaction history
+- `cache/` — Foundry compilation cache
 
-## Contract Addresses
+## Public EVVM Contract Address
 
 ### Ethereum Sepolia Testnet
-- **EVVM**: [0x4fb6f9CDe625b9436dF1653d2ee99388C90215EA](https://sepolia.etherscan.io/address/0x4fb6f9cde625b9436df1653d2ee99388c90215ea#code)
-- **MateNameService**: [0x166b4207da35740e38e55B09819fdFAdF27401cD](https://sepolia.etherscan.io/address/0x166b4207da35740e38e55b09819fdfadf27401cd#code)
-- **SMate**: [0xD4C37ed2C0A4de515382d2EEa0940ea99234Ca72](https://sepolia.etherscan.io/address/0xd4c37ed2c0a4de515382d2eea0940ea99234ca72#code)
-- **Estimator**: [0xAF4387cC9105C9B716B9B84F673996dCa7ac5150](https://sepolia.etherscan.io/address/0xaf4387cc9105c9b716b9b84f673996dca7ac5150#code)
+- **EVVM**: [0x5c66EB3CAAD38851C9c6291D77510b0Eaa8B3c84](https://sepolia.etherscan.io/address/0x5c66EB3CAAD38851C9c6291D77510b0Eaa8B3c84#code)
+- **NameService**: [0x7F41487e77D092BA53c980171C4ebc71d68DC5AE](https://sepolia.etherscan.io/address/0x7F41487e77D092BA53c980171C4ebc71d68DC5AE#code)
+- **Staking**: [0x0fb1aD66636411bB50a33458a8De6507D9b270E8](https://sepolia.etherscan.io/address/0x0fb1aD66636411bB50a33458a8De6507D9b270E8#code)
+- **Estimator**: [0xF66464ccf2d0e56DFA15572c122C6474B0A1c82C](https://sepolia.etherscan.io/address/0xF66464ccf2d0e56DFA15572c122C6474B0A1c82C#code)
 
 ### Arbitrum Sepolia Testnet
-- **EVVM**: [0x15d2D6c2b3037bf11fa889dF7a31A8A4ECf2A551](https://sepolia.arbiscan.io/address/0x15d2d6c2b3037bf11fa889df7a31a8a4ecf2a551#code)
-- **MateNameService**: [0x86A2a79564582fE2Ff7707995Bf3f191EE21BEe5](https://sepolia.arbiscan.io/address/0x86a2a79564582fe2ff7707995bf3f191ee21bee5#code)
-- **SMate**: [0x1EBA2e0F2B36182401135965498fd28014d42064](https://sepolia.arbiscan.io/address/0x1eba2e0f2b36182401135965498fd28014d42064#code)
-- **Estimator**: [0xc0E73Ec2b09F4F26EA1D19dBdf7b9b0B6116F6d1](https://sepolia.arbiscan.io/address/0xc0e73ec2b09f4f26ea1d19dbdf7b9b0b6116f6d1#code)
+- **EVVM**: [0xaBee6F8014468e88035041E94d530838d2ce025C](https://sepolia.arbiscan.io/address/0xaBee6F8014468e88035041E94d530838d2ce025C#code)
+- **NameService**: [0xfd54B984637AC288B8bd24AD0915Ef6fBaEA5400](https://sepolia.arbiscan.io/address/0xfd54B984637AC288B8bd24AD0915Ef6fBaEA5400#code)
+- **Staking**: [0xb39a3134D1714AcFa6d0Bc3C9235C09918bbe2a6](https://sepolia.arbiscan.io/address/0xb39a3134D1714AcFa6d0Bc3C9235C09918bbe2a6#code)
+- **Estimator**: [0xA319d1Ba0Eb0bd8aaeb7Fe931F3Ef70383fAA3A5](https://sepolia.arbiscan.io/address/0xA319d1Ba0Eb0bd8aaeb7Fe931F3Ef70383fAA3A5#code)
 
 ## Development Flow
 1. **Playground**: Prototype and experiment with new features in the playground repo.
-2. **Testnet (this repo)**: Integrate, test, and validate on public testnets (testnet6).
+2. **Testnet (this repo)**: Integrate, test, and validate on public testnets.
 3. **Mainnet**: After successful testnet validation, proceed to mainnet deployment.
 
 ## Prerequisites
@@ -44,7 +46,7 @@ EVVM provides a comprehensive set of smart contracts and tools for scalable, mod
 
 ## Key Dependencies
 - [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts)
-- [Chainlink CCIP](https://github.com/smartcontractkit/ccip)
+- [Chainlink CCIP](https://docs.chain.link/ccip)
 - [Axelar GMP](https://github.com/axelarnetwork/axelar-gmp-sdk-solidity)
 - [Hyperlane](https://github.com/hyperlane-xyz/hyperlane-monorepo)
 - [LayerZero OApp](https://github.com/LayerZero-Labs/LayerZero-v2)
@@ -52,8 +54,8 @@ EVVM provides a comprehensive set of smart contracts and tools for scalable, mod
 
 ## Quick Start
 ```bash
-git clone https://github.com/EVVM-org/EVVM-Contracts
-cd EVVM-Contracts
+git clone https://github.com/EVVM-org/Testnet-Contracts
+cd Testnet-Contracts
 make install
 ```
 
@@ -69,6 +71,11 @@ Start a local Anvil chain:
 make anvil
 ```
 
+Deploy contracts to local testnet:
+```bash
+make deployLocalTestnet
+```
+
 ## Deployment
 Deploy contracts to Ethereum Sepolia testnet:
 ```bash
@@ -79,7 +86,7 @@ Deploy contracts to Arbitrum Sepolia testnet:
 make deployTestnet NETWORK=arb
 ```
 
-## Compilation
+## Compilation and Testing
 Recompile contracts:
 ```bash
 make compile
@@ -88,6 +95,25 @@ Check contract sizes:
 ```bash
 make seeSizes
 ```
+
+## Available Commands
+Get help with all available commands:
+```bash
+make help
+```
+
+## Configuration Files
+- `foundry.toml` — Foundry project configuration with remappings
+- `package.json` — Node.js dependencies for cross-chain protocols
+- `makefile` — Build and deployment automation
+- `wake.toml` — Wake tooling configuration
+
+## Contract Architecture
+The EVVM ecosystem consists of four main contracts:
+- **Evvm.sol**: Core virtual machine implementation
+- **NameService.sol**: Domain name resolution system  
+- **Staking.sol**: Token staking and rewards mechanism
+- **Estimator.sol**: Staking rewards estimation and calculation
 
 ## Contributing
 1. Fork the repository
