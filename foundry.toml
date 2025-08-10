@@ -15,10 +15,6 @@ remappings = [
 ]
 optimizer-runs = 300
 via_ir = true
-
-[fuzz]
-runs = 100
-seed = '0xdeadbeef'
-max_test_rejects = 1000
+fs_permissions = [{ access = "read", path = "./input" }]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
