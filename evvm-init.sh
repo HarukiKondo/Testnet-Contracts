@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Load environment variables from .env file
+if [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+fi
+
 # Colores para la salida
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -197,10 +202,51 @@ echo ""
 read -p "Do you want to deploy the contracts now? (y/n): " deployNow
 
 if [[ $deployNow == "y" || $deployNow == "Y" ]]; then
-    echo -e "${BLUE}Starting deployment...${NC}"
-    make deploy
+    echo -e "${GREEN}=== Network Selection ===${NC}"
+    echo "Available networks:"
+    echo "  eth    - Ethereum Sepolia"
+    echo "  arb    - Arbitrum Sepolia"
+    echo "  custom - Custom RPC URL"
+    echo ""
+    
+    while true; do
+        read -p "$(echo -e "Select network (eth/arb/custom) ${GRAY}[eth]${NC}: ")" network
+        network=${network:-"eth"}
+        
+        if [[ $network == "eth" || $network == "arb" || $network == "custom" ]]; then
+            break
+        else
+            echo -e "${RED}Error: Invalid network. Use 'eth', 'arb', or 'custom'${NC}"
+        fi
+    done
+    
+    if [[ $network == "custom" ]]; then
+        echo -e "${BLUE}=== Custom Network Configuration ===${NC}"
+        while true; do
+            read -p "Enter RPC URL: " rpc_url
+            if [[ -n "$rpc_url" ]]; then
+                break
+            else
+                echo -e "${RED}Error: RPC URL is required${NC}"
+            fi
+        done
+        
+        echo -e "${BLUE}Starting deployment on custom network...${NC}"
+        forge script script/DeployTestnet.s.sol:DeployTestnet \
+            --rpc-url "$rpc_url" \
+            --account defaultKey \
+            --broadcast \
+            --verify \
+            --etherscan-api-key $ETHERSCAN_API \
+            -vvvvvv
+    else
+        echo -e "${BLUE}Starting deployment on ${network}...${NC}"
+        make deployTestnet NETWORK=$network
+    fi
 else
-    echo -e "${YELLOW}To deploy later, run: make deploy${NC}"
+    echo -e "${YELLOW}To deploy later, run:${NC}"
+    echo -e "  ${YELLOW}For predefined networks: make deployTestnet NETWORK=<eth|arb>${NC}"
+    echo -e "  ${YELLOW}For custom RPC: forge script script/DeployTestnet.s.sol:DeployTestnet --rpc-url <YOUR_RPC_URL> --account defaultKey --broadcast --verify --etherscan-api-key \$ETHERSCAN_API -vvvvvv${NC}"
 fi
 
 echo -e "${GREEN}Configuration completed!${NC}"
