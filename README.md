@@ -24,16 +24,16 @@ EVVM provides a comprehensive set of smart contracts and tools for scalable, mod
 ## Public EVVM Contract Address
 
 ### Ethereum Sepolia Testnet
-- **EVVM**: [0x5c66EB3CAAD38851C9c6291D77510b0Eaa8B3c84](https://sepolia.etherscan.io/address/0x5c66EB3CAAD38851C9c6291D77510b0Eaa8B3c84#code)
-- **NameService**: [0x7F41487e77D092BA53c980171C4ebc71d68DC5AE](https://sepolia.etherscan.io/address/0x7F41487e77D092BA53c980171C4ebc71d68DC5AE#code)
-- **Staking**: [0x0fb1aD66636411bB50a33458a8De6507D9b270E8](https://sepolia.etherscan.io/address/0x0fb1aD66636411bB50a33458a8De6507D9b270E8#code)
-- **Estimator**: [0xF66464ccf2d0e56DFA15572c122C6474B0A1c82C](https://sepolia.etherscan.io/address/0xF66464ccf2d0e56DFA15572c122C6474B0A1c82C#code)
+- **EVVM**: [0x1256f895Da1c58f47CA3F9Ca89f88e60275fEe9c](https://sepolia.etherscan.io/address/0x1256f895Da1c58f47CA3F9Ca89f88e60275fEe9c#code)
+- **NameService**: [0x5e610944934b688890390f3d63397fb3b85528f3](https://sepolia.etherscan.io/address/0x5e610944934b688890390f3d63397fb3b85528f3#code)
+- **Staking**: [0x50dcf8b764d6583063372186Cf4818356BBE4dD6](https://sepolia.etherscan.io/address/0x50dcf8b764d6583063372186Cf4818356BBE4dD6#code)
+- **Estimator**: [0xA3E93E38a509EDCF7d4D4B4B34C8e0222F4d038D](https://sepolia.etherscan.io/address/0xA3E93E38a509EDCF7d4D4B4B34C8e0222F4d038D#code)
 
 ### Arbitrum Sepolia Testnet
-- **EVVM**: [0xaBee6F8014468e88035041E94d530838d2ce025C](https://sepolia.arbiscan.io/address/0xaBee6F8014468e88035041E94d530838d2ce025C#code)
-- **NameService**: [0xfd54B984637AC288B8bd24AD0915Ef6fBaEA5400](https://sepolia.arbiscan.io/address/0xfd54B984637AC288B8bd24AD0915Ef6fBaEA5400#code)
-- **Staking**: [0xb39a3134D1714AcFa6d0Bc3C9235C09918bbe2a6](https://sepolia.arbiscan.io/address/0xb39a3134D1714AcFa6d0Bc3C9235C09918bbe2a6#code)
-- **Estimator**: [0xA319d1Ba0Eb0bd8aaeb7Fe931F3Ef70383fAA3A5](https://sepolia.arbiscan.io/address/0xA319d1Ba0Eb0bd8aaeb7Fe931F3Ef70383fAA3A5#code)
+- **EVVM**: [0xC1ef02492F1A75bCdB20766B558f10D643f9d504](https://sepolia.arbiscan.io/address/0xC1ef02492F1A75bCdB20766B558f10D643f9d504#code)
+- **NameService**: [0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309](https://sepolia.arbiscan.io/address/0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309#code)
+- **Staking**: [0x9BB0ABD0AB28FD1704589D65806Ab1E88c78A280](https://sepolia.arbiscan.io/address/0x9BB0ABD0AB28FD1704589D65806Ab1E88c78A280#code)
+- **Estimator**: [0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309](https://sepolia.arbiscan.io/address/0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309#code)
 
 ## Development Flow
 1. **Playground**: Prototype and experiment with new features in the playground repo.
