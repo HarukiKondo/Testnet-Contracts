@@ -51,9 +51,9 @@ EVVM provides a comprehensive set of smart contracts and tools for scalable, mod
 ### Environment Setup
 Create a `.env` file with your configuration:
 ```bash
-RPC_URL_ETH_SEPOLIA=https://sepolia.infura.io/v3/YOUR_KEY
-RPC_URL_ARB_SEPOLIA=https://sepolia-rollup.arbitrum.io/rpc
-ETHERSCAN_API=your_etherscan_api_key
+RPC_URL_ETH_SEPOLIA=<YOUR_ETH_SEPOLIA_RPC_URL>
+RPC_URL_ARB_SEPOLIA=<YOUR_ARB_SEPOLIA_RPC_URL>
+ETHERSCAN_API=<YOUR_ETHERSCAN_API_KEY>
 ```
 
 ### Security Setup - Import Private Key
@@ -69,11 +69,6 @@ This command will prompt you to enter your private key securely. The key will be
 
 ## Key Dependencies
 - [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts)
-- [Chainlink CCIP](https://docs.chain.link/ccip)
-- [Axelar GMP](https://github.com/axelarnetwork/axelar-gmp-sdk-solidity)
-- [Hyperlane](https://github.com/hyperlane-xyz/hyperlane-monorepo)
-- [LayerZero OApp](https://github.com/LayerZero-Labs/LayerZero-v2)
-- [Uniswap v3](https://github.com/Uniswap/v3-core)
 
 ## Quick Start
 ```bash
