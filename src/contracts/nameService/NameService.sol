@@ -1086,7 +1086,7 @@ contract NameService {
         bytes memory signature
     ) internal {
         if (priorityFlag) {
-            Evvm(evvmAddress.current).payMateStaking_async(
+            Evvm(evvmAddress.current).payStaker_async(
                 user,
                 address(this),
                 "",
@@ -1098,7 +1098,7 @@ contract NameService {
                 signature
             );
         } else {
-            Evvm(evvmAddress.current).payMateStaking_sync(
+            Evvm(evvmAddress.current).payStaker_sync(
                 user,
                 address(this),
                 "",

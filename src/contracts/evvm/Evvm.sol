@@ -39,8 +39,8 @@ pragma solidity ^0.8.0;
  * - Cross-chain asset bridging capabilities
  * 
  * Payment Types:
- * - `payNoMateStaking_*`: Standard payments for non-stakers
- * - `payMateStaking_*`: Enhanced payments for MATE token stakers with rewards
+ * - `payNoStaker_*`: Standard payments for non-stakers
+ * - `payStaker_*`: Enhanced payments for MATE token stakers with rewards
  * - `payMultiple`: Batch payments to multiple recipients
  * - `dispersePay`: Single-source multi-recipient distribution
  * - `caPay`: Administrative token distribution
@@ -215,7 +215,7 @@ contract Evvm is EvvmStorage {
      * @param executor Address authorized to execute this transaction (zero address = sender only)
      * @param signature Cryptographic signature authorizing this payment
      */
-    function payNoMateStaking_sync(
+    function payNoStaker_sync(
         address from,
         address to_address,
         string memory to_identity,
@@ -278,7 +278,7 @@ contract Evvm is EvvmStorage {
      * @param executor Address authorized to execute this transaction (zero address = sender only)
      * @param signature Cryptographic signature authorizing this payment
      */
-    function payNoMateStaking_async(
+    function payNoStaker_async(
         address from,
         address to_address,
         string memory to_identity,
@@ -347,7 +347,7 @@ contract Evvm is EvvmStorage {
      * @param executor Address authorized to execute this transaction
      * @param signature Cryptographic signature authorizing this payment
      */
-    function payMateStaking_sync(
+    function payStaker_sync(
         address from,
         address to_address,
         string memory to_identity,
@@ -423,7 +423,7 @@ contract Evvm is EvvmStorage {
      * @param executor Address authorized to execute this transaction (must be a staker)
      * @param signature Cryptographic signature authorizing this payment
      */
-    function payMateStaking_async(
+    function payStaker_async(
         address from,
         address to_address,
         string memory to_identity,
