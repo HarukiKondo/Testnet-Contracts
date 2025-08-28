@@ -392,7 +392,7 @@ contract Evvm is EvvmStorage {
             if (!_updateBalance(from, msg.sender, token, priorityFee))
                 revert ErrorsLib.UpdateBalanceFailed();
         }
-        _giveMateReward(msg.sender, 1);
+        _giveReward(msg.sender, 1);
 
         nextSyncUsedNonce[from]++;
     }
@@ -472,7 +472,7 @@ contract Evvm is EvvmStorage {
                 revert ErrorsLib.UpdateBalanceFailed();
         }
 
-        if (!_giveMateReward(msg.sender, 1))
+        if (!_giveReward(msg.sender, 1))
             revert ErrorsLib.UpdateBalanceFailed();
 
         asyncUsedNonce[from][nonce] = true;
@@ -626,7 +626,7 @@ contract Evvm is EvvmStorage {
         }
 
         if (isAddressStaker(msg.sender)) {
-            _giveMateReward(msg.sender, successfulTransactions);
+            _giveReward(msg.sender, successfulTransactions);
         }
     }
 
@@ -726,7 +726,7 @@ contract Evvm is EvvmStorage {
             revert ErrorsLib.InvalidAmount(acomulatedAmount, amount);
 
         if (isAddressStaker(msg.sender)) {
-            _giveMateReward(msg.sender, 1);
+            _giveReward(msg.sender, 1);
             balances[msg.sender][token] += priorityFee;
         } else {
             balances[from][token] += priorityFee;
@@ -779,7 +779,7 @@ contract Evvm is EvvmStorage {
             revert ErrorsLib.UpdateBalanceFailed();
 
         if (isAddressStaker(msg.sender)) {
-            _giveMateReward(msg.sender, 1);
+            _giveReward(msg.sender, 1);
         }
     }
 
@@ -841,7 +841,7 @@ contract Evvm is EvvmStorage {
             revert ErrorsLib.InvalidAmount(acomulatedAmount, amount);
 
         if (isAddressStaker(msg.sender)) {
-            _giveMateReward(msg.sender, 1);
+            _giveReward(msg.sender, 1);
         }
     }
 
@@ -967,7 +967,7 @@ contract Evvm is EvvmStorage {
      * 
      * Reward System:
      * - Calculates reward based on system reward rate and transaction count
-     * - Directly increases MATE token balance for gas efficiency
+     * - Directly increases principal token balance for gas efficiency
      * - Returns success status for error handling in calling functions
      * 
      * Reward Calculation:
@@ -975,24 +975,24 @@ contract Evvm is EvvmStorage {
      * - Total reward: base_reward × transaction_amount
      * - Added directly to user's MATE token balance
      * 
-     * @param user Address of the staker to receive MATE rewards
+     * @param user Address of the staker to receive principal tokenrewards
      * @param amount Number of transactions or reward multiplier
      * @return success True if reward distribution completed successfully
      */
-    function _giveMateReward(
+    function _giveReward(
         address user,
         uint256 amount
     ) internal returns (bool) {
-        uint256 mateReward = evvmMetadata.reward * amount;
+        uint256 principalReward = evvmMetadata.reward * amount;
         uint256 userBalance = balances[user][
             evvmMetadata.principalTokenAddress
         ];
 
         balances[user][evvmMetadata.principalTokenAddress] =
             userBalance +
-            mateReward;
+            principalReward;
 
-        return (userBalance + mateReward ==
+        return (userBalance + principalReward ==
             balances[user][evvmMetadata.principalTokenAddress]);
     }
 
