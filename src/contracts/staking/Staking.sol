@@ -42,7 +42,6 @@ pragma solidity ^0.8.0;
  */
 
 import {Evvm} from "@EVVM/testnet/contracts/evvm/Evvm.sol";
-import {SignatureRecover} from "@EVVM/testnet/lib/SignatureRecover.sol";
 import {NameService} from "@EVVM/testnet/contracts/nameService/NameService.sol";
 import {Estimator} from "@EVVM/testnet/contracts/staking/Estimator.sol";
 import {ErrorsLib} from "@EVVM/testnet/contracts/staking/lib/ErrorsLib.sol";
@@ -50,7 +49,6 @@ import {SignatureUtils} from "@EVVM/testnet/contracts/staking/lib/SignatureUtils
 
 
 contract Staking {
-    using SignatureRecover for *;
 
     /**
      * @dev Metadata for presale stakers
