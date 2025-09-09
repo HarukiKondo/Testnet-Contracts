@@ -49,12 +49,7 @@ abstract contract EvvmStructs {
         uint32 LayerZeroChain;
         bytes32 LayerZeroAddress;
     }
-
-    struct whitheListedTokenMetadata {
-        bool isAllowed;
-        address uniswapPool;
-    }
-
+    
     struct EvvmMetadata {
         string EvvmName;
         uint256 EvvmID;

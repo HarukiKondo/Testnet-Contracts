@@ -21,14 +21,11 @@ abstract contract EvvmStorage is EvvmStructs {
     address constant ETH_ADDRESS = address(0);
     bytes1 constant FLAG_IS_STAKER = 0x01;
 
-    address gasServiceAddress;
-    address routerCCIP;
-
-    address mailboxHyperlane;
-
     address nameServiceAddress;
 
     address stakingContractAddress;
+
+    address treasuryAddress;
 
     address whitelistTokenToBeAdded_address;
     address whitelistTokenToBeAdded_pool;
@@ -51,8 +48,6 @@ abstract contract EvvmStorage is EvvmStructs {
     address proposalImplementation;
     uint256 timeToAcceptImplementation;
 
-    UintTypeProposal maxAmountToWithdraw;
-
     mapping(address => bytes1) stakerList;
 
     mapping(address user => mapping(address token => uint256 quantity)) balances;
@@ -63,7 +58,4 @@ abstract contract EvvmStorage is EvvmStructs {
 
     mapping(address user => uint256 nonce) nextFisherDepositNonce;
 
-    mapping(address user => uint256 nonce) nextFisherWithdrawalNonce;
-
-    mapping(address token => whitheListedTokenMetadata) whitelistedTokens;
 }

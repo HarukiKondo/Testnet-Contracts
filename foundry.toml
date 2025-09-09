@@ -11,7 +11,8 @@ remappings = [
     'solidity-bytes-utils/=node_modules/solidity-bytes-utils/',
     '@uniswap/v3-periphery/contracts/=lib/v3-periphery/contracts/',
     '@uniswap/v3-core/contracts/=lib/v3-core/contracts/',
-    '@EVVM/testnet/=src/'
+    '@EVVM/testnet/=src/',
+    '@solady/=lib/solady/src/'
 ]
 optimizer-runs = 300
 via_ir = true

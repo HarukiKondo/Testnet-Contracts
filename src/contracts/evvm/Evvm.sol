@@ -75,7 +75,6 @@ contract Evvm is EvvmStorage {
      * 
      * Initial Setup:
      * - Configures admin and staking contract addresses
-     * - Sets maximum withdrawal limits for security
      * - Distributes initial MATE tokens to staking contract
      * - Registers staking contract as privileged staker
      * - Prepares for NameService integration
@@ -92,8 +91,6 @@ contract Evvm is EvvmStorage {
         stakingContractAddress = _stakingContractAddress;
 
         admin.current = _initialOwner;
-
-        maxAmountToWithdraw.current = 0.1 ether;
 
         balances[_stakingContractAddress][evvmMetadata.principalTokenAddress] =
             getRewardAmount() *
@@ -118,7 +115,10 @@ contract Evvm is EvvmStorage {
      * 
      * @param _nameServiceAddress Address of the deployed NameService contract
      */
-    function _setupNameServiceAddress(address _nameServiceAddress) external {
+    function _setupNameServiceAndTreasuryAddress(
+        address _nameServiceAddress,
+        address _treasuryAddress
+    ) external {
         if (breakerSetupNameServiceAddress == 0x00) {
             revert();
         }
@@ -127,7 +127,10 @@ contract Evvm is EvvmStorage {
             10000 *
             10 ** 18;
         stakerList[nameServiceAddress] = FLAG_IS_STAKER;
+
+        treasuryAddress = _treasuryAddress;
     }
+
 
     fallback() external {
         if (currentImplementation == address(0)) revert();
@@ -845,78 +848,28 @@ contract Evvm is EvvmStorage {
         }
     }
 
-    //█ Fisher Bridge Functions ██████████████████████████████████████████████████████████████
+    //░▒▓█Treasury excluisve functions██████████████████████████████████████████▓▒░
 
-    /**
-     * @notice Processes cross-chain withdrawal requests through Fisher Bridge
-     * @dev Enables users to withdraw tokens from EVVM to external chains with validation
-     * 
-     * Cross-Chain Features:
-     * - Signature-verified withdrawal authorization
-     * - Sequential nonce management for withdrawal security
-     * - Priority fee system for bridge operators
-     * - Withdrawal limits for ETH transfers
-     * - MATE token reward system for bridge operators
-     * 
-     * Security Restrictions:
-     * - Principal token (MATE) cannot be withdrawn
-     * - ETH withdrawals limited by maximum amount configuration
-     * - Sufficient balance verification before processing
-     * - Signature verification prevents unauthorized withdrawals
-     * 
-     * Bridge Operator Benefits:
-     * - Receives priority fee for processing withdrawal
-     * - Earns MATE token rewards for bridge operations
-     * - Sequential nonce prevents replay attacks
-     * 
-     * @param user Address of the user requesting withdrawal
-     * @param addressToReceive External chain address to receive tokens
-     * @param token Address of the token to withdraw
-     * @param priorityFee Fee paid to bridge operator for processing
-     * @param amount Amount of tokens to withdraw
-     * @param signature User's signature authorizing the withdrawal
-     */
-    function fisherWithdrawal(
+    function addAmountToUser(
         address user,
-        address addressToReceive,
         address token,
-        uint256 priorityFee,
-        uint256 amount,
-        bytes memory signature
-    ) public {
-        if (
-            !SignatureUtils.verifyMessageSignedForFisherBridge(
-                user,
-                addressToReceive,
-                nextFisherWithdrawalNonce[user],
-                token,
-                priorityFee,
-                amount,
-                signature
-            )
-        ) revert ErrorsLib.InvalidSignature();
+        uint256 amount
+    ) external {
+        if (msg.sender != treasuryAddress)
+            revert ErrorsLib.SenderIsNotTreasury();
 
-        if (
-            token == evvmMetadata.principalTokenAddress ||
-            balances[user][token] < amount + priorityFee
-        ) revert ErrorsLib.InsufficientBalance();
+        balances[user][token] += amount;
+    }
 
-        if (token == ETH_ADDRESS) {
-            if (amount > maxAmountToWithdraw.current)
-                revert ErrorsLib.InvalidAmount(
-                    amount,
-                    maxAmountToWithdraw.current
-                );
-        }
+    function removeAmountFromUser(
+        address user,
+        address token,
+        uint256 amount
+    ) external {
+        if (msg.sender != treasuryAddress)
+            revert ErrorsLib.SenderIsNotTreasury();
 
-        balances[user][token] -= (amount + priorityFee);
-
-        balances[msg.sender][token] += priorityFee;
-
-        balances[msg.sender][evvmMetadata.principalTokenAddress] += evvmMetadata
-            .reward;
-
-        nextFisherWithdrawalNonce[user]++;
+        balances[user][token] -= amount;
     }
 
     //█ Internal Functions ███████████████████████████████████████████████████████████████████
@@ -1093,112 +1046,6 @@ contract Evvm is EvvmStorage {
         admin.timeToAccept = 0;
     }
 
-    //█ Token Whitelist Management Functions ██████████████████████████████████████
-
-    /**
-     * @notice Prepares a token for whitelisting with time-delayed governance
-     * @dev First step in the two-step token whitelisting process for security
-     * 
-     * Token Whitelisting Security:
-     * - 1-day time delay for token approval
-     * - Requires Uniswap pool for price validation
-     * - Enables withdrawal limits calculation
-     * - Prevents immediate malicious token additions
-     * 
-     * Uniswap Integration:
-     * - Pool address used for price discovery
-     * - Enables withdrawal limit calculations
-     * - Provides liquidity validation for supported tokens
-     * 
-     * @param token Address of the token to be whitelisted
-     * @param pool Address of the Uniswap pool for price validation
-     */
-    function prepareTokenToBeWhitelisted(
-        address token,
-        address pool
-    ) external onlyAdmin {
-        whitelistTokenToBeAdded_address = token;
-        whitelistTokenToBeAdded_pool = pool;
-        whitelistTokenToBeAdded_dateToSet = block.timestamp + 1 days;
-    }
-
-    /**
-     * @notice Cancels a pending token whitelisting proposal
-     * @dev Allows admin to reject proposed token additions before approval
-     */
-    function cancelPrepareTokenToBeWhitelisted() external onlyAdmin {
-        whitelistTokenToBeAdded_address = address(0);
-        whitelistTokenToBeAdded_pool = address(0);
-        whitelistTokenToBeAdded_dateToSet = 0;
-    }
-
-    /**
-     * @notice Executes pending token whitelisting after time delay
-     * @dev Completes the token whitelisting process and enables withdrawal support
-     */
-    function addTokenToWhitelist() external onlyAdmin {
-        if (block.timestamp < whitelistTokenToBeAdded_dateToSet) {
-            revert();
-        }
-        whitelistedTokens[
-            whitelistTokenToBeAdded_address
-        ] = whitheListedTokenMetadata({
-            isAllowed: true,
-            uniswapPool: whitelistTokenToBeAdded_pool
-        });
-
-        whitelistedTokens[whitelistTokenToBeAdded_address].isAllowed = true;
-
-        whitelistTokenToBeAdded_address = address(0);
-        whitelistTokenToBeAdded_pool = address(0);
-        whitelistTokenToBeAdded_dateToSet = 0;
-    }
-
-    /**
-     * @notice Updates the Uniswap pool for an existing whitelisted token
-     * @dev Allows pool address changes for price validation and limits
-     * @param token Address of the whitelisted token
-     * @param pool Address of the new Uniswap pool
-     */
-    function changePool(address token, address pool) external onlyAdmin {
-        if (!whitelistedTokens[token].isAllowed) {
-            revert();
-        }
-        whitelistedTokens[token].uniswapPool = pool;
-    }
-
-    /**
-     * @notice Removes a token from the whitelist and disables withdrawal support
-     * @dev Revokes token support and clears associated pool configuration
-     * @param token Address of the token to remove from whitelist
-     */
-    function removeTokenWhitelist(address token) external onlyAdmin {
-        if (!whitelistedTokens[token].isAllowed) {
-            revert();
-        }
-        whitelistedTokens[token].isAllowed = false;
-        whitelistedTokens[token].uniswapPool = address(0);
-    }
-
-    function prepareMaxAmountToWithdraw(uint256 amount) external onlyAdmin {
-        maxAmountToWithdraw.proposal = amount;
-        maxAmountToWithdraw.timeToAccept = block.timestamp + 1 days;
-    }
-
-    function cancelPrepareMaxAmountToWithdraw() external onlyAdmin {
-        maxAmountToWithdraw.proposal = 0;
-        maxAmountToWithdraw.timeToAccept = 0;
-    }
-
-    function setMaxAmountToWithdraw() external onlyAdmin {
-        if (block.timestamp < maxAmountToWithdraw.timeToAccept) {
-            revert();
-        }
-        maxAmountToWithdraw.current = maxAmountToWithdraw.proposal;
-        maxAmountToWithdraw.proposal = 0;
-        maxAmountToWithdraw.timeToAccept = 0;
-    }
-
     //█ Reward System Functions ███████████████████████████████████████████████████████████████
 
     /**
@@ -1334,15 +1181,6 @@ contract Evvm is EvvmStorage {
     }
 
     /**
-     * @notice Gets the current maximum withdrawal amount for ETH
-     * @dev Returns the current limit for ETH withdrawals through Fisher Bridge
-     * @return Maximum ETH amount that can be withdrawn in a single transaction
-     */
-    function getMaxAmountToWithdraw() external view returns (uint256) {
-        return maxAmountToWithdraw.current;
-    }
-
-    /**
      * @notice Gets the next synchronous nonce for a user
      * @dev Returns the expected nonce for the next sync payment transaction
      * @param user Address to check sync nonce for
@@ -1366,18 +1204,6 @@ contract Evvm is EvvmStorage {
         uint256 nonce
     ) external view returns (bool) {
         return asyncUsedNonce[user][nonce];
-    }
-
-    /**
-     * @notice Gets the next Fisher Bridge withdrawal nonce for a user
-     * @dev Returns the expected nonce for the next cross-chain withdrawal
-     * @param user Address to check withdrawal nonce for
-     * @return Next Fisher Bridge withdrawal nonce
-     */
-    function getNextFisherWithdrawalNonce(
-        address user
-    ) external view returns (uint256) {
-        return nextFisherWithdrawalNonce[user];
     }
 
     /**
@@ -1441,26 +1267,6 @@ contract Evvm is EvvmStorage {
      */
     function getPrincipalTokenTotalSupply() public view returns (uint256) {
         return evvmMetadata.totalSupply;
-    }
-
-    /**
-     * @notice Checks if a token is whitelisted for withdrawals
-     * @dev Verifies if a token is approved for Fisher Bridge operations
-     * @param token Address of the token to check
-     * @return True if the token is whitelisted for withdrawals
-     */
-    function getIfTokenIsWhitelisted(address token) public view returns (bool) {
-        return whitelistedTokens[token].isAllowed;
-    }
-
-    /**
-     * @notice Gets the Uniswap pool address for a whitelisted token
-     * @dev Returns the pool used for price validation and withdrawal limits
-     * @param token Address of the token to get pool for
-     * @return Address of the associated Uniswap pool
-     */
-    function getTokenUniswapPool(address token) public view returns (address) {
-        return whitelistedTokens[token].uniswapPool;
     }
 
     /**

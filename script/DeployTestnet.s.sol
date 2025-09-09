@@ -7,12 +7,14 @@ import {Staking} from "@EVVM/testnet/contracts/staking/Staking.sol";
 import {Estimator} from "@EVVM/testnet/contracts/staking/Estimator.sol";
 import {NameService} from "@EVVM/testnet/contracts/nameService/NameService.sol";
 import {EvvmStructs} from "@EVVM/testnet/contracts/evvm/lib/EvvmStructs.sol";
+import {Treasury} from "@EVVM/testnet/contracts/treasury/Treasury.sol";
 
 contract DeployTestnet is Script {
     Staking sMate;
     Evvm evvm;
     Estimator estimator;
     NameService nameService;
+    Treasury treasury;
 
     struct AddressData {
         address activator;
@@ -101,8 +103,10 @@ contract DeployTestnet is Script {
         );
         nameService = new NameService(address(evvm), addressData.admin);
 
+        treasury = new Treasury(address(evvm));
+
         sMate._setupEstimatorAndEvvm(address(estimator), address(evvm));
-        evvm._setupNameServiceAddress(address(nameService));
+        evvm._setupNameServiceAndTreasuryAddress(address(nameService), address(treasury));
 
         vm.stopBroadcast();
 
