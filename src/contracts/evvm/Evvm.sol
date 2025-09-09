@@ -29,30 +29,50 @@ pragma solidity ^0.8.0;
  *      - Cross-chain bridge functionality (Fisher Bridge)
  *      - Balance management across the EVVM ecosystem
  *      - Integration with NameService for identity-based payments
+ *      - Treasury integration for privileged balance operations
  * 
  * Key Features:
- * - Synchronous and asynchronous payment processing
- * - Staker privilege system with enhanced rewards
+ * - Synchronous and asynchronous payment processing with nonce management
+ * - Staker privilege system with enhanced rewards and transaction processing benefits
  * - Multi-recipient payment batching (payMultiple, dispersePay)
  * - Administrative payment distribution (caPay, disperseCaPay)
- * - Proxy pattern support with delegatecall fallback
- * - Cross-chain asset bridging capabilities
+ * - Proxy pattern support with delegatecall fallback for upgradeability
+ * - Cross-chain asset bridging capabilities through Fisher Bridge
+ * - Deflationary tokenomics with era-based reward halving mechanism
+ * - Treasury-controlled balance management for minting and burning operations
  * 
  * Payment Types:
- * - `payNoStaker_*`: Standard payments for non-stakers
- * - `payStaker_*`: Enhanced payments for MATE token stakers with rewards
- * - `payMultiple`: Batch payments to multiple recipients
- * - `dispersePay`: Single-source multi-recipient distribution
- * - `caPay`: Administrative token distribution
+ * - `payNoStaker_*`: Standard payments for non-stakers with basic functionality
+ * - `payStaker_*`: Enhanced payments for MATE token stakers with priority fee rewards
+ * - `payMultiple`: Batch payments to multiple recipients with individual success tracking
+ * - `dispersePay`: Single-source multi-recipient distribution with signature verification
+ * - `caPay`: Administrative token distribution for smart contracts
+ * - Treasury functions: Direct balance manipulation for authorized operations
+ * 
+ * Economic Model:
+ * - MATE token as principal token with reward distribution system
+ * - Era-based reward halving when supply thresholds are reached
+ * - Staker incentives through transaction processing rewards
+ * - Random bonus rewards for triggering era transitions
  * 
  * Security Features:
- * - Signature-based transaction authorization
- * - Nonce management to prevent replay attacks
- * - Executor validation for delegated transactions
- * - Balance verification before transfers
+ * - Signature-based transaction authorization with EIP-191 compliance
+ * - Dual nonce system: synchronous (sequential) and asynchronous (custom)
+ * - Executor validation for delegated transaction processing
+ * - Balance verification before transfers to prevent overdrafts
+ * - Time-delayed governance for critical upgrades (30-day implementation, 1-day admin)
+ * - Access control through admin and treasury authorization
+ * 
+ * Integration Points:
+ * - NameService: Identity resolution for username-based payments
+ * - Staking Contract: Staker status management and reward distribution
+ * - Treasury Contract: Privileged balance operations and token management
+ * - Implementation Contract: Proxy pattern for contract upgradeability
  * 
  * @custom:version 1.0.0
  * @custom:testnet This contract is deployed on testnet for development and testing
+ * @custom:security Time-delayed governance, signature verification, access control
+ * @custom:upgrade-pattern Transparent proxy with admin-controlled implementation
  */
 
 import {NameService} from "@EVVM/testnet/contracts/nameService/NameService.sol";
@@ -62,6 +82,25 @@ import {SignatureUtils} from "@EVVM/testnet/contracts/evvm/lib/SignatureUtils.so
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Evvm is EvvmStorage {
+    /**
+     * @notice Access control modifier restricting function calls to the current admin
+     * @dev Validates that msg.sender matches the current admin address before function execution
+     * 
+     * Access Control:
+     * - Only the current admin can call functions with this modifier
+     * - Uses the admin.current address from the storage structure
+     * - Reverts with no specific error message for unauthorized calls
+     * 
+     * Usage:
+     * - Applied to critical administrative functions
+     * - Protects system configuration changes
+     * - Prevents unauthorized upgrades and parameter modifications
+     * 
+     * Security:
+     * - Simple but effective access control mechanism
+     * - Used for proxy upgrades, admin transfers, and system configuration
+     * - Part of the time-delayed governance system for critical operations
+     */
     modifier onlyAdmin() {
         if (msg.sender != admin.current) {
             revert();
@@ -70,18 +109,38 @@ contract Evvm is EvvmStorage {
     }
 
     /**
-     * @notice Initializes the EVVM contract with essential configuration
-     * @dev Sets up the core system parameters and initial token distributions
+     * @notice Initializes the EVVM contract with essential configuration and token distributions
+     * @dev Sets up the core system parameters, admin roles, and initial MATE token allocations
      * 
-     * Initial Setup:
-     * - Configures admin and staking contract addresses
-     * - Distributes initial MATE tokens to staking contract
-     * - Registers staking contract as privileged staker
-     * - Prepares for NameService integration
+     * Critical Initial Setup:
+     * - Configures admin address with full administrative privileges
+     * - Sets staking contract address for reward distribution and status management
+     * - Stores EVVM metadata including principal token address and reward parameters
+     * - Distributes initial MATE tokens to staking contract (2x reward amount)
+     * - Registers staking contract as privileged staker with full benefits
+     * - Activates breaker flag for one-time NameService and Treasury setup
      * 
-     * @param _initialOwner Address that will have administrative privileges
-     * @param _stakingContractAddress Address of the staking contract for rewards
-     * @param _evvmMetadata Metadata structure containing token addresses and system parameters
+     * Token Distribution:
+     * - Staking contract receives 2x current reward amount in MATE tokens
+     * - Enables immediate reward distribution capabilities
+     * - Provides operational liquidity for staking rewards
+     * 
+     * Security Initialization:
+     * - Sets admin.current for immediate administrative access
+     * - Prepares system for NameService and Treasury integration
+     * - Establishes staking privileges for the staking contract
+     * 
+     * Post-Deployment Requirements:
+     * - Must call `_setupNameServiceAndTreasuryAddress()` to complete integration
+     * - NameService and Treasury addresses must be configured before full operation
+     * - Implementation contract should be set for proxy functionality
+     * 
+     * @param _initialOwner Address that will have administrative privileges over the contract
+     * @param _stakingContractAddress Address of the staking contract for reward distribution and staker management
+     * @param _evvmMetadata Metadata structure containing principal token address, reward amounts, and system parameters
+     * 
+     * @custom:deployment Must be followed by NameService and Treasury setup
+     * @custom:security Admin address has full control over system configuration
      */
     constructor(
         address _initialOwner,
@@ -104,16 +163,32 @@ contract Evvm is EvvmStorage {
     }
 
     /**
-     * @notice One-time setup function to configure the NameService contract address
+     * @notice One-time setup function to configure NameService and Treasury contract addresses
      * @dev Can only be called once due to breaker flag mechanism for security
      * 
-     * Setup Process:
+     * Critical Setup Process:
      * - Validates the breaker flag is active (prevents multiple calls)
-     * - Sets the NameService contract address for identity resolution
-     * - Provides initial MATE token balance (10,000 MATE) to NameService
-     * - Registers NameService as a privileged staker for enhanced functionality
+     * - Sets the NameService contract address for identity resolution in payments
+     * - Configures the Treasury contract address for privileged balance operations
+     * - Provides initial MATE token balance (10,000 MATE) to NameService for operations
+     * - Registers NameService as a privileged staker for enhanced functionality and rewards
      * 
-     * @param _nameServiceAddress Address of the deployed NameService contract
+     * Security Features:
+     * - Single-use function protected by breaker flag
+     * - Prevents unauthorized reconfiguration of critical system addresses
+     * - Must be called during initial system deployment phase
+     * 
+     * Initial Token Distribution:
+     * - NameService receives 10,000 MATE tokens for operational expenses
+     * - NameService gains staker privileges for transaction processing
+     * - Enables identity-based payment resolution throughout the ecosystem
+     * 
+     * @param _nameServiceAddress Address of the deployed NameService contract for identity resolution
+     * @param _treasuryAddress Address of the Treasury contract for balance management operations
+     * 
+     * @custom:security Single-use function - can only be called once
+     * @custom:access-control No explicit access control - relies on deployment sequence
+     * @custom:integration Critical for NameService and Treasury functionality
      */
     function _setupNameServiceAndTreasuryAddress(
         address _nameServiceAddress,
@@ -131,7 +206,39 @@ contract Evvm is EvvmStorage {
         treasuryAddress = _treasuryAddress;
     }
 
-
+    /**
+     * @notice Fallback function implementing proxy pattern with delegatecall to implementation
+     * @dev Routes all unrecognized function calls to the current implementation contract
+     * 
+     * Proxy Mechanism:
+     * - Forwards all calls not handled by this contract to the implementation
+     * - Uses delegatecall to preserve storage context and msg.sender
+     * - Allows for contract upgrades without changing the main contract address
+     * - Maintains all state variables in the proxy contract storage
+     * 
+     * Implementation Process:
+     * 1. Validates that an implementation contract is set
+     * 2. Copies all calldata to memory for forwarding
+     * 3. Executes delegatecall to implementation with full gas allowance
+     * 4. Copies the return data back from the implementation
+     * 5. Returns the result or reverts based on implementation response
+     * 
+     * Security Features:
+     * - Reverts if no implementation is set (prevents undefined behavior)
+     * - Preserves all gas for the implementation call
+     * - Maintains exact return data and revert behavior from implementation
+     * - Uses storage slot reading for gas efficiency
+     * 
+     * Upgrade Compatibility:
+     * - Enables seamless contract upgrades through implementation changes
+     * - Preserves all existing state and user balances
+     * - Allows new functionality addition without user migration
+     * - Supports time-delayed upgrade governance for security
+     * 
+     * @custom:security Requires valid implementation address
+     * @custom:proxy Transparent proxy pattern implementation
+     * @custom:upgrade-safe Preserves storage layout between upgrades
+     */
     fallback() external {
         if (currentImplementation == address(0)) revert();
 
@@ -848,8 +955,36 @@ contract Evvm is EvvmStorage {
         }
     }
 
-    //░▒▓█Treasury excluisve functions██████████████████████████████████████████▓▒░
+    //░▒▓█Treasury exclusive functions██████████████████████████████████████████▓▒░
 
+    /**
+     * @notice Adds tokens to a user's balance in the EVVM system
+     * @dev Restricted function that can only be called by the authorized treasury contract
+     * 
+     * Treasury Operations:
+     * - Allows treasury to mint or credit tokens to user accounts
+     * - Used for reward distributions, airdrops, or token bridging
+     * - Direct balance manipulation bypasses normal transfer restrictions
+     * - No signature verification required (treasury authorization)
+     * 
+     * Access Control:
+     * - Only the registered treasury contract can call this function
+     * - Reverts with SenderIsNotTreasury error for unauthorized callers
+     * - Provides centralized token distribution mechanism
+     * 
+     * Use Cases:
+     * - Cross-chain bridge token minting
+     * - Administrative reward distributions
+     * - System-level token allocations
+     * - Emergency balance corrections
+     * 
+     * @param user Address of the user to receive tokens
+     * @param token Address of the token contract to add balance for
+     * @param amount Amount of tokens to add to the user's balance
+     * 
+     * @custom:access-control Only treasury contract
+     * @custom:security No overflow protection needed due to controlled access
+     */
     function addAmountToUser(
         address user,
         address token,
@@ -861,6 +996,39 @@ contract Evvm is EvvmStorage {
         balances[user][token] += amount;
     }
 
+    /**
+     * @notice Removes tokens from a user's balance in the EVVM system
+     * @dev Restricted function that can only be called by the authorized treasury contract
+     * 
+     * Treasury Operations:
+     * - Allows treasury to burn or debit tokens from user accounts
+     * - Used for cross-chain bridging, penalties, or system corrections
+     * - Direct balance manipulation bypasses normal transfer protections
+     * - Can potentially create negative balances if not carefully managed
+     * 
+     * Access Control:
+     * - Only the registered treasury contract can call this function
+     * - Reverts with SenderIsNotTreasury error for unauthorized callers
+     * - Provides centralized token withdrawal mechanism
+     * 
+     * Use Cases:
+     * - Cross-chain bridge token burning
+     * - Administrative penalty applications
+     * - System-level token reclamations
+     * - Emergency balance corrections
+     * 
+     * Security Considerations:
+     * - No underflow protection: treasury must ensure sufficient balance
+     * - Can result in unexpected negative balances if misused
+     * - Treasury contract should implement additional validation
+     * 
+     * @param user Address of the user to remove tokens from
+     * @param token Address of the token contract to remove balance for
+     * @param amount Amount of tokens to remove from the user's balance
+     * 
+     * @custom:access-control Only treasury contract
+     * @custom:security No underflow protection - treasury responsibility
+     */
     function removeAmountFromUser(
         address user,
         address token,
