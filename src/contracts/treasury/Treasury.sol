@@ -3,20 +3,38 @@
 
 pragma solidity ^0.8.0;
 
+/**
+ * @title Treasury Contract
+ * @author jistro.eth
+ * @notice Treasury for managing deposits and withdrawals in the EVVM ecosystem
+ * @dev Secure vault for ETH and ERC20 tokens with EVVM integration
+ */
+
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeTransferLib} from "@solady/utils/SafeTransferLib.sol";
 import {Evvm} from "@EVVM/testnet/contracts/evvm/Evvm.sol";
 import {ErrorsLib} from "@EVVM/testnet/contracts/treasury/lib/ErrorsLib.sol";
 
 contract Treasury {
+    /// @notice Address of the EVVM core contract
     address public evvmAddress;
 
+    /// @notice Nonces for Fisher Bridge withdrawals
     mapping(address user => uint256 nonce) nextFisherWithdrawalNonce;
 
+    /**
+     * @notice Initialize Treasury with EVVM contract address
+     * @param _evvmAddress Address of the EVVM core contract
+     */
     constructor(address _evvmAddress) {
         evvmAddress = _evvmAddress;
     }
-    
+
+    /**
+     * @notice Deposit ETH or ERC20 tokens
+     * @param token ERC20 token address (ignored for ETH deposits)
+     * @param amount Token amount (ignored for ETH deposits)
+     */
     function deposit(address token, uint256 amount) external payable {
         if (msg.value > 0) {
             /// user is sending host native coin
@@ -32,6 +50,11 @@ contract Treasury {
         }
     }
 
+    /**
+     * @notice Withdraw ETH or ERC20 tokens
+     * @param token Token address (address(0) for ETH)
+     * @param amount Amount to withdraw
+     */
     function withdraw(address token, uint256 amount) external {
         if (Evvm(evvmAddress).getBalance(msg.sender, token) < amount)
             revert ErrorsLib.InsufficientBalance();
