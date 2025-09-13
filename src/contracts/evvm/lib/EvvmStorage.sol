@@ -35,8 +35,6 @@ abstract contract EvvmStorage is EvvmStructs {
 
     EvvmMetadata evvmMetadata;
 
-    TreasuryMetadata treasuryMetadata;
-
     AddressTypeProposal admin;
 
     /**
