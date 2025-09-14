@@ -981,7 +981,7 @@ contract NameService {
      * @dev Amount must be available after reserving funds for operations and locked offers
      * @param _amount Amount of Principal Tokens to withdraw
      */
-    function proposeWithdrawPrincipalTokenTokens(
+    function proposeWithdrawPrincipalTokens(
         uint256 _amount
     ) public onlyAdmin {
         if (
@@ -1006,7 +1006,7 @@ contract NameService {
      * @notice Cancels the pending token withdrawal proposal
      * @dev Only the current admin can cancel pending proposals
      */
-    function cancelWithdrawPrincipalTokenTokens() public onlyAdmin {
+    function cancelWithdrawPrincipalTokens() public onlyAdmin {
         amountToWithdrawTokens.proposal = 0;
         amountToWithdrawTokens.timeToAccept = 0;
     }
@@ -1015,7 +1015,7 @@ contract NameService {
      * @notice Executes the approved token withdrawal
      * @dev Can only be called after the time delay has passed
      */
-    function claimWithdrawPrincipalTokenTokens() public onlyAdmin {
+    function claimWithdrawPrincipalTokens() public onlyAdmin {
         if (block.timestamp < amountToWithdrawTokens.timeToAccept) {
             revert();
         }
