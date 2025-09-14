@@ -43,14 +43,14 @@ pragma solidity ^0.8.0;
  * 
  * Payment Types:
  * - `payNoStaker_*`: Standard payments for non-stakers with basic functionality
- * - `payStaker_*`: Enhanced payments for MATE token stakers with priority fee rewards
+ * - `payStaker_*`: Enhanced payments for Principal Token stakers with priority fee rewards
  * - `payMultiple`: Batch payments to multiple recipients with individual success tracking
  * - `dispersePay`: Single-source multi-recipient distribution with signature verification
  * - `caPay`: Administrative token distribution for smart contracts
  * - Treasury functions: Direct balance manipulation for authorized operations
  * 
  * Economic Model:
- * - MATE token as principal token with reward distribution system
+ * - Principal Token as principal token with reward distribution system
  * - Era-based reward halving when supply thresholds are reached
  * - Staker incentives through transaction processing rewards
  * - Random bonus rewards for triggering era transitions
@@ -110,7 +110,7 @@ contract Evvm is EvvmStorage {
 
     /**
      * @notice Initializes the EVVM contract with essential configuration and token distributions
-     * @dev Sets up the core system parameters, admin roles, and initial MATE token allocations
+     * @dev Sets up the core system parameters, admin roles, and initial Principal Token allocations
      * 
      * Critical Initial Setup:
      * - Configures admin address with full administrative privileges
@@ -170,7 +170,7 @@ contract Evvm is EvvmStorage {
      * - Validates the breaker flag is active (prevents multiple calls)
      * - Sets the NameService contract address for identity resolution in payments
      * - Configures the Treasury contract address for privileged balance operations
-     * - Provides initial MATE token balance (10,000 MATE) to NameService for operations
+     * - Provides initial Principal Token balance (10,000 MATE) to NameService for operations
      * - Registers NameService as a privileged staker for enhanced functionality and rewards
      * 
      * Security Features:
@@ -434,7 +434,7 @@ contract Evvm is EvvmStorage {
     }
 
     /**
-     * @notice Processes synchronous payments for MATE token stakers with rewards
+     * @notice Processes synchronous payments for Principal Token stakers with rewards
      * @dev Enhanced payment function that provides staker benefits and executor rewards
      * 
      * Staker Benefits:
@@ -508,12 +508,12 @@ contract Evvm is EvvmStorage {
     }
 
     /**
-     * @notice Processes asynchronous payments for MATE token stakers with rewards
+     * @notice Processes asynchronous payments for Principal Token stakers with rewards
      * @dev Enhanced async payment function with staker benefits and custom nonce management
      * 
      * Staker Benefits:
      * - Priority fee rewards for transaction processing
-     * - MATE token rewards for stakers (1x reward amount)
+     * - Principal Token rewards for stakers (1x reward amount)
      * - Custom nonce support for flexible transaction ordering
      * 
      * Payment Flow:
@@ -1083,7 +1083,7 @@ contract Evvm is EvvmStorage {
     }
 
     /**
-     * @notice Internal function to distribute MATE token rewards to stakers
+     * @notice Internal function to distribute Principal Token rewards to stakers
      * @dev Provides incentive distribution for transaction processing and staking participation
      * 
      * Reward System:
@@ -1094,7 +1094,7 @@ contract Evvm is EvvmStorage {
      * Reward Calculation:
      * - Base reward per transaction: evvmMetadata.reward
      * - Total reward: base_reward × transaction_amount
-     * - Added directly to user's MATE token balance
+     * - Added directly to user's Principal Token balance
      * 
      * @param user Address of the staker to receive principal tokenrewards
      * @param amount Number of transactions or reward multiplier
@@ -1224,7 +1224,7 @@ contract Evvm is EvvmStorage {
      * - Activates when total supply exceeds current era token threshold
      * - Moves half of remaining tokens to next era threshold  
      * - Halves the base reward amount for future transactions
-     * - Provides random MATE token bonus to caller (1-5083x reward)
+     * - Provides random Principal Token bonus to caller (1-5083x reward)
      * 
      * Economic Impact:
      * - Gradually reduces inflation through reward halving
@@ -1305,7 +1305,7 @@ contract Evvm is EvvmStorage {
      * @dev Provides access to system-wide configuration and economic parameters
      * 
      * Metadata Contents:
-     * - Principal token address (MATE token)
+     * - Principal token address (Principal Token)
      * - Current reward amount per transaction
      * - Total supply tracking
      * - Era tokens threshold for reward transitions
@@ -1420,7 +1420,7 @@ contract Evvm is EvvmStorage {
     }
 
     /**
-     * @notice Gets the current MATE token reward amount per transaction
+     * @notice Gets the current Principal Token reward amount per transaction
      * @dev Returns the base reward distributed to stakers for transaction processing
      * @return Current reward amount in MATE tokens
      */

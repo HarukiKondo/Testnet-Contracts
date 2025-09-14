@@ -121,7 +121,7 @@ contract NameService {
      * @dev Metadata for marketplace offers on usernames
      * @param offerer Address making the offer
      * @param expireDate Timestamp when the offer expires
-     * @param amount Amount offered in MATE tokens (after 0.5% marketplace fee deduction)
+     * @param amount Amount offered in Principal Tokens (after 0.5% marketplace fee deduction)
      */
     struct OfferMetadata {
         address offerer;
@@ -149,12 +149,12 @@ contract NameService {
     /// @dev Proposal system for admin address changes with time delay
     AddressTypeProposal admin;
 
-    /// @dev Constant address representing the MATE token in the EVVM ecosystem
+    /// @dev Constant address representing the Principal Token in the EVVM ecosystem
     address private constant PRINCIPAL_TOKEN_ADDRESS =
         0x0000000000000000000000000000000000000001;
 
-    /// @dev Amount of MATE tokens locked in pending marketplace offers
-    uint256 private mateTokenLockedForWithdrawOffers;
+    /// @dev Amount of Principal Tokens locked in pending marketplace offers
+    uint256 private principalTokenTokenLockedForWithdrawOffers;
 
     /// @dev Restricts function access to the current admin address only
     modifier onlyAdmin() {
@@ -341,7 +341,7 @@ contract NameService {
      * @param user Address making the offer
      * @param username Target username for the offer
      * @param expireDate Timestamp when the offer expires
-     * @param amount Amount being offered in MATE tokens
+     * @param amount Amount being offered in Principal Tokens
      * @param nonce Unique nonce to prevent replay attacks
      * @param signature Signature proving authorization for this operation
      * @param priorityFee_EVVM Priority fee for faster transaction processing
@@ -405,7 +405,7 @@ contract NameService {
                 ((amount * 125) / 100_000) +
                 priorityFee_EVVM
         );
-        mateTokenLockedForWithdrawOffers +=
+        principalTokenTokenLockedForWithdrawOffers +=
             ((amount * 995) / 1000) +
             (amount / 800);
 
@@ -477,7 +477,7 @@ contract NameService {
                 priorityFee_EVVM
         );
 
-        mateTokenLockedForWithdrawOffers -=
+        principalTokenTokenLockedForWithdrawOffers -=
             (usernameOffers[username][offerID].amount) +
             (((usernameOffers[username][offerID].amount * 1) / 199) / 4);
 
@@ -555,7 +555,7 @@ contract NameService {
             );
         }
 
-        mateTokenLockedForWithdrawOffers -=
+        principalTokenTokenLockedForWithdrawOffers -=
             (usernameOffers[username][offerID].amount) +
             (((usernameOffers[username][offerID].amount * 1) / 199) / 4);
 
@@ -568,8 +568,8 @@ contract NameService {
      *
      * Pricing Rules:
      * - Free renewal if done within 1 year of expiration (limited time offer)
-     * - Variable cost based on highest active offer (minimum 500 MATE)
-     * - Fixed 500,000 MATE if renewed more than 1 year before expiration
+     * - Variable cost based on highest active offer (minimum 500 Principal Token)
+     * - Fixed 500,000 Principal Token if renewed more than 1 year before expiration
      * - Can be renewed up to 100 years in advance
      *
      * @param user Address of the username owner
@@ -977,11 +977,13 @@ contract NameService {
     }
 
     /**
-     * @notice Proposes to withdraw MATE tokens from the contract
+     * @notice Proposes to withdraw Principal Tokens from the contract
      * @dev Amount must be available after reserving funds for operations and locked offers
-     * @param _amount Amount of MATE tokens to withdraw
+     * @param _amount Amount of Principal Tokens to withdraw
      */
-    function proposeWithdrawMateTokens(uint256 _amount) public onlyAdmin {
+    function proposeWithdrawPrincipalTokenTokens(
+        uint256 _amount
+    ) public onlyAdmin {
         if (
             Evvm(evvmAddress.current).getBalance(
                 address(this),
@@ -989,7 +991,7 @@ contract NameService {
             ) -
                 (5083 +
                     Evvm(evvmAddress.current).getRewardAmount() +
-                    mateTokenLockedForWithdrawOffers) <
+                    principalTokenTokenLockedForWithdrawOffers) <
             _amount ||
             _amount == 0
         ) {
@@ -1004,7 +1006,7 @@ contract NameService {
      * @notice Cancels the pending token withdrawal proposal
      * @dev Only the current admin can cancel pending proposals
      */
-    function cancelWithdrawMateTokens() public onlyAdmin {
+    function cancelWithdrawPrincipalTokenTokens() public onlyAdmin {
         amountToWithdrawTokens.proposal = 0;
         amountToWithdrawTokens.timeToAccept = 0;
     }
@@ -1013,7 +1015,7 @@ contract NameService {
      * @notice Executes the approved token withdrawal
      * @dev Can only be called after the time delay has passed
      */
-    function claimWithdrawMateTokens() public onlyAdmin {
+    function claimWithdrawPrincipalTokenTokens() public onlyAdmin {
         if (block.timestamp < amountToWithdrawTokens.timeToAccept) {
             revert();
         }
@@ -1071,7 +1073,7 @@ contract NameService {
      * @notice Internal function to handle payments through the EVVM contract
      * @dev Supports both synchronous and asynchronous payment modes
      * @param user Address making the payment
-     * @param ammount Amount to pay in MATE tokens
+     * @param ammount Amount to pay in Principal Tokens
      * @param priorityFee Additional priority fee for faster processing
      * @param nonce Nonce for the EVVM transaction
      * @param priorityFlag True for async payment, false for sync payment
@@ -1112,10 +1114,10 @@ contract NameService {
     }
 
     /**
-     * @notice Internal function to distribute MATE tokens to users
+     * @notice Internal function to distribute Principal Tokens to users
      * @dev Calls the EVVM contract's caPay function for token distribution
      * @param user Address to receive the tokens
-     * @param amount Amount of MATE tokens to distribute
+     * @param amount Amount of Principal Tokens to distribute
      */
     function makeCaPay(address user, uint256 amount) internal {
         Evvm(evvmAddress.current).caPay(user, PRINCIPAL_TOKEN_ADDRESS, amount);
@@ -1400,10 +1402,10 @@ contract NameService {
      * @notice Calculates the cost to renew a username registration
      * @dev Pricing varies based on timing and market demand:
      *      - Free if renewed before expiration (within grace period)
-     *      - Variable cost based on highest active offer (minimum 500 MATE)
-     *      - Fixed 500,000 MATE if renewed more than 1 year before expiration
+     *      - Variable cost based on highest active offer (minimum 500 Principal Token)
+     *      - Fixed 500,000 Principal Token if renewed more than 1 year before expiration
      * @param _identity The username to calculate renewal price for
-     * @return price The cost in MATE tokens to renew the username
+     * @return price The cost in Principal Tokens to renew the username
      */
     function seePriceToRenew(
         string memory _identity
@@ -1429,10 +1431,10 @@ contract NameService {
             if (price == 0) {
                 price = 500 * 10 ** 18;
             } else {
-                uint256 mateReward = Evvm(evvmAddress.current)
+                uint256 principalTokenReward = Evvm(evvmAddress.current)
                     .getRewardAmount();
-                price = ((price * 5) / 1000) > (500000 * mateReward)
-                    ? (500000 * mateReward)
+                price = ((price * 5) / 1000) > (500000 * principalTokenReward)
+                    ? (500000 * principalTokenReward)
                     : ((price * 5) / 1000);
             }
         } else {
@@ -1443,7 +1445,7 @@ contract NameService {
     /**
      * @notice Gets the current price to add custom metadata to a username
      * @dev Price is dynamic based on current EVVM reward amount
-     * @return price Cost in MATE tokens (10x current reward amount)
+     * @return price Cost in Principal Tokens (10x current reward amount)
      */
     function getPriceToAddCustomMetadata() public view returns (uint256 price) {
         price = 10 * Evvm(evvmAddress.current).getRewardAmount();
@@ -1452,7 +1454,7 @@ contract NameService {
     /**
      * @notice Gets the current price to remove a single custom metadata entry
      * @dev Price is dynamic based on current EVVM reward amount
-     * @return price Cost in MATE tokens (10x current reward amount)
+     * @return price Cost in Principal Tokens (10x current reward amount)
      */
     function getPriceToRemoveCustomMetadata()
         public
@@ -1466,7 +1468,7 @@ contract NameService {
      * @notice Gets the cost to remove all custom metadata entries from a username
      * @dev Cost scales with the number of metadata entries to remove
      * @param _identity The username to calculate flush cost for
-     * @return price Total cost in MATE tokens (10x reward amount per metadata entry)
+     * @return price Total cost in Principal Tokens (10x reward amount per metadata entry)
      */
     function getPriceToFlushCustomMetadata(
         string memory _identity
@@ -1480,7 +1482,7 @@ contract NameService {
      * @notice Gets the cost to completely remove a username and all its data
      * @dev Includes cost for metadata removal plus base username deletion fee
      * @param _identity The username to calculate deletion cost for
-     * @return price Total cost in MATE tokens (metadata flush cost + 1x reward amount)
+     * @return price Total cost in Principal Tokens (metadata flush cost + 1x reward amount)
      */
     function getPriceToFlushUsername(
         string memory _identity
@@ -1663,7 +1665,7 @@ contract NameService {
     /**
      * @notice Gets the current price for registering a new username
      * @dev Price is dynamic and based on current EVVM reward amount (100x reward)
-     * @return The current registration price in MATE tokens
+     * @return The current registration price in Principal Tokens
      */
     function getPricePerRegistration() public view returns (uint256) {
         return Evvm(evvmAddress.current).getRewardAmount() * 100;
@@ -1702,7 +1704,7 @@ contract NameService {
     /**
      * @notice Gets information about pending token withdrawal proposals
      * @dev Returns proposed withdrawal amount and acceptance deadline
-     * @return proposalAmountToWithdrawTokens Proposed withdrawal amount in MATE tokens
+     * @return proposalAmountToWithdrawTokens Proposed withdrawal amount in Principal Tokens
      * @return timeToAcceptAmountToWithdrawTokens Timestamp when proposal can be executed
      */
     function getProposedWithdrawAmountFullDetails()

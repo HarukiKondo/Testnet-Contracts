@@ -136,7 +136,7 @@ contract Staking {
     /// @dev Flag to enable/disable public staking
     BoolTypeProposal private allowPublicStaking;
 
-    /// @dev Address representing the principal MATE token
+    /// @dev Address representing the principal Principal Token
     address private constant PRINCIPAL_TOKEN_ADDRESS =
         0x0000000000000000000000000000000000000001;
 
@@ -659,7 +659,7 @@ contract Staking {
      * @notice Internal function to handle payments through the EVVM contract
      * @dev Supports both synchronous and asynchronous payment modes
      * @param user Address of the user making the payment
-     * @param amount Amount to be paid in MATE tokens
+     * @param amount Amount to be paid in Principal Tokens
      * @param priorityFee Additional priority fee for the transaction
      * @param priorityFlag True for async payment, false for sync payment
      * @param nonce Nonce for the EVVM transaction
@@ -940,9 +940,9 @@ contract Staking {
     }
 
     /**
-     * @notice Returns the fixed price of one staking token in MATE tokens
-     * @dev Returns the constant price of 5083 MATE tokens per staking
-     * @return Price of one staking token in MATE tokens (with 18 decimals)
+     * @notice Returns the fixed price of one staking token in Principal Tokens
+     * @dev Returns the constant price of 5083 Principal Tokens per staking
+     * @return Price of one staking token in Principal Tokens (with 18 decimals)
      */
     function priceOfStaking() external pure returns (uint256) {
         return PRICE_OF_STAKING;
@@ -1140,9 +1140,9 @@ contract Staking {
     }
 
     /**
-     * @notice Returns the address representing the MATE token
+     * @notice Returns the address representing the Principal Token
      * @dev This is a constant address used to represent the principal token
-     * @return Address representing the MATE token (0x...0001)
+     * @return Address representing the Principal Token (0x...0001)
      */
     function getMateAddress() external pure returns (address) {
         return PRINCIPAL_TOKEN_ADDRESS;
