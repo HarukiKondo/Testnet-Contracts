@@ -4,6 +4,16 @@
 pragma solidity ^0.8.0;
 
 /**
+░██████████                                                     
+    ░██                                                         
+    ░█░██░███░███████░██████ ░███████░██    ░█░██░███░██    ░██ 
+    ░█░███  ░██    ░██    ░█░██      ░██    ░█░███   ░██    ░██ 
+    ░█░██   ░████████░███████░███████░██    ░█░██    ░██    ░██ 
+    ░█░██   ░██     ░██   ░██      ░█░██   ░██░██    ░██   ░███ 
+    ░█░██    ░███████░█████░█░███████ ░█████░█░██     ░█████░██ 
+                                                            ░██ 
+                                                      ░███████  
+                                                                
  * @title Treasury Contract
  * @author jistro.eth
  * @notice Treasury for managing deposits and withdrawals in the EVVM ecosystem
@@ -28,18 +38,15 @@ contract Treasury {
     }
 
     /**
-     * @notice Deposit ETH or ERC20 tokens with validation
-     * @dev For ETH: token must be address(0) and amount must equal msg.value
-     *      For ERC20: msg.value must be 0 and amount must be > 0
-     * @param token ERC20 token address or address(0) for ETH
-     * @param amount Token amount (must match msg.value for ETH deposits)
+     * @notice Deposit ETH or ERC20 tokens
+     * @param token ERC20 token address (ignored for ETH deposits)
+     * @param amount Token amount (ignored for ETH deposits)
      */
     function deposit(address token, uint256 amount) external payable {
         if (address(0) == token) {
-            // ETH deposit: validate msg.value and amount consistency
+            /// user is sending host native coin
             if (msg.value == 0)
                 revert ErrorsLib.DepositAmountMustBeGreaterThanZero();
-
             if (amount != msg.value) revert ErrorsLib.InvalidDepositAmount();
 
             Evvm(evvmAddress).addAmountToUser(
@@ -48,7 +55,7 @@ contract Treasury {
                 msg.value
             );
         } else {
-            // ERC20 deposit: validate no ETH sent and amount > 0
+            /// user is sending ERC20 tokens
 
             if (msg.value != 0) revert ErrorsLib.InvalidDepositAmount();
             if (amount == 0)
@@ -60,8 +67,7 @@ contract Treasury {
     }
 
     /**
-     * @notice Withdraw ETH or ERC20 tokens with safety checks
-     * @dev Validates principal token protection and sufficient balance before withdrawal
+     * @notice Withdraw ETH or ERC20 tokens
      * @param token Token address (address(0) for ETH)
      * @param amount Amount to withdraw
      */
@@ -73,7 +79,8 @@ contract Treasury {
             revert ErrorsLib.InsufficientBalance();
 
         if (token == address(0)) {
-            // ETH withdrawal: remove from EVVM balance and transfer safely
+            /// user is trying to withdraw native coin
+
             Evvm(evvmAddress).removeAmountFromUser(
                 msg.sender,
                 address(0),
@@ -81,7 +88,8 @@ contract Treasury {
             );
             SafeTransferLib.safeTransferETH(msg.sender, amount);
         } else {
-            // ERC20 withdrawal: remove from EVVM balance and transfer tokens
+            /// user is trying to withdraw ERC20 tokens
+
             Evvm(evvmAddress).removeAmountFromUser(msg.sender, token, amount);
             IERC20(token).transfer(msg.sender, amount);
         }
