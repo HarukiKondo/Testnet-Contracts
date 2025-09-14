@@ -19,7 +19,6 @@ pragma solidity ^0.8.0;
    ██║   ███████╗███████║   ██║   ██║ ╚████║███████╗   ██║   
    ╚═╝   ╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝╚══════╝   ╚═╝   
                                                              
-/**
  * @title EVVM (Ethereum Virtual Machine Virtualization) Core Contract
  * @author jistro.eth ariutokintumi.eth
  * @notice Core payment processing and token management system for the EVVM ecosystem
