@@ -15,6 +15,7 @@ EVVM provides a comprehensive set of smart contracts and tools for scalable, mod
 - `src/contracts/evvm/` — Core EVVM contracts and storage
 - `src/contracts/nameService/` — NameService contracts for domain management
 - `src/contracts/staking/` — Staking and Estimator contracts
+- `src/contracts/treasury/` — Treasury contract for managing deposits and withdrawals
 - `src/lib/` — Shared Solidity libraries (AdvancedStrings, SignatureRecover, etc.)
 - `script/` — Deployment and automation scripts (e.g., `DeployTestnet.s.sol`)
 - `lib/` — External dependencies (OpenZeppelin, Uniswap v3, forge-std)
@@ -26,16 +27,18 @@ EVVM provides a comprehensive set of smart contracts and tools for scalable, mod
 ## Public EVVM Contract Address
 
 ### Ethereum Sepolia Testnet
-- **EVVM**: [0x1256f895Da1c58f47CA3F9Ca89f88e60275fEe9c](https://sepolia.etherscan.io/address/0x1256f895Da1c58f47CA3F9Ca89f88e60275fEe9c#code)
-- **NameService**: [0x5e610944934b688890390f3d63397fb3b85528f3](https://sepolia.etherscan.io/address/0x5e610944934b688890390f3d63397fb3b85528f3#code)
-- **Staking**: [0x50dcf8b764d6583063372186Cf4818356BBE4dD6](https://sepolia.etherscan.io/address/0x50dcf8b764d6583063372186Cf4818356BBE4dD6#code)
-- **Estimator**: [0xA3E93E38a509EDCF7d4D4B4B34C8e0222F4d038D](https://sepolia.etherscan.io/address/0xA3E93E38a509EDCF7d4D4B4B34C8e0222F4d038D#code)
+- **EVVM**: [0x2029bb5e15E22c19Bc8bde3426fab29dD4db8A98](https://sepolia.etherscan.io/address/0x2029bb5e15E22c19Bc8bde3426fab29dD4db8A98#code)
+- **NameService**: [0xD904f38B8c9968AbAb63f47c21aB120FCe59F013](https://sepolia.etherscan.io/address/0xD904f38B8c9968AbAb63f47c21aB120FCe59F013#code)
+- **Staking**: [0xA68D4a0cFFDc6145D35Ae27521d01b166Fe4AE46](https://sepolia.etherscan.io/address/0xA68D4a0cFFDc6145D35Ae27521d01b166Fe4AE46#code)
+- **Estimator**: [0x2aBEAD7519c9AFc14eEc2582dDD9FF04f0da0F42](https://sepolia.etherscan.io/address/0x2aBEAD7519c9AFc14eEc2582dDD9FF04f0da0F42#code)
+- **Treasury**: [0x98465F828b82d0b676937e159547F35BBDBdfe91](https://sepolia.etherscan.io/address/0x98465F828b82d0b676937e159547F35BBDBdfe91#code)
 
 ### Arbitrum Sepolia Testnet
-- **EVVM**: [0xC1ef02492F1A75bCdB20766B558f10D643f9d504](https://sepolia.arbiscan.io/address/0xC1ef02492F1A75bCdB20766B558f10D643f9d504#code)
-- **NameService**: [0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309](https://sepolia.arbiscan.io/address/0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309#code)
-- **Staking**: [0x9BB0ABD0AB28FD1704589D65806Ab1E88c78A280](https://sepolia.arbiscan.io/address/0x9BB0ABD0AB28FD1704589D65806Ab1E88c78A280#code)
-- **Estimator**: [0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309](https://sepolia.arbiscan.io/address/0x5cBf2D4Bbf834912Ad0bD59980355b57695e8309#code)
+- **EVVM**: [0xC688C12541Ff85EF3E63755F6889317f312d03A3](https://sepolia.arbiscan.io/address/0xC688C12541Ff85EF3E63755F6889317f312d03A3#code)
+- **NameService**: [0x82Fbac7857E8407cE6578E02B0be0d3Cd15Fb790](https://sepolia.arbiscan.io/address/0x82Fbac7857E8407cE6578E02B0be0d3Cd15Fb790#code)
+- **Staking**: [0xaC3C70604a5633807Ae0149B6E6766452355635C](https://sepolia.arbiscan.io/address/0xaC3C70604a5633807Ae0149B6E6766452355635C#code)
+- **Estimator**: [0xC4FF60fBAEf050FC476f4Ab10CA75378A2Cc79A3](https://sepolia.arbiscan.io/address/0xC4FF60fBAEf050FC476f4Ab10CA75378A2Cc79A3#code)
+- **Treasury**: [0x7d4F9D95e84f6903c7247527e6BF1FA864F7c764](https://sepolia.arbiscan.io/address/0x7d4F9D95e84f6903c7247527e6BF1FA864F7c764#code)
 
 ## Development Flow
 1. **Playground**: Prototype and experiment with new features in the playground repo.
@@ -224,6 +227,7 @@ The EVVM ecosystem consists of four main contracts:
 - **NameService.sol**: Domain name resolution system  
 - **Staking.sol**: Token staking and rewards mechanism
 - **Estimator.sol**: Staking rewards estimation and calculation
+- **Treasury.sol**: Manages deposits and withdrawals of ETH and ERC20 tokens, ensuring secure integration with the EVVM ecosystem.
 
 ## Contributing
 1. Fork the repository
