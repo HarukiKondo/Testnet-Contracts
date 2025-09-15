@@ -74,53 +74,45 @@ This command will prompt you to enter your private key securely. The key will be
 - [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts)
 
 ## Quick Start
+
+Deploy your EVVM virtual blockchain on testnet in 4 simple steps:
+
+### 1. Clone and Install
 ```bash
 git clone https://github.com/EVVM-org/Testnet-Contracts
 cd Testnet-Contracts
 make install
 ```
 
-### Security Setup
-Import your private key securely before deploying:
+### 2. Environment Setup
+Create `.env` file with your configuration:
+```bash
+cp .env.example .env
+# Add your RPC URLs and API keys
+```
+
+### 3. Secure Key Import
 ```bash
 cast wallet import defaultKey --interactive
 ```
 
-> **Note**: You can use any alias instead of `defaultKey`. If you choose a different alias, make sure to update the `makefile` and `evvm-init.sh` accordingly.
-
-### Automated Setup with evvm-init.sh
-For a guided setup and deployment process, use the initialization script:
+### 4. Interactive Setup & Deploy
 ```bash
 ./evvm-init.sh
 ```
 
-This interactive script will:
-- Guide you through configuring administrator addresses
-- Set up EVVM metadata (name, ID, token details)
-- Generate required configuration files in the `input/` directory
-- Optionally deploy contracts to your chosen network
+The wizard will configure:
+- **Administrator addresses** (admin, golden fisher, activator)
+- **EVVM metadata** (name, ID, principal token details)
+- **Advanced parameters** (supply, rewards) - optional
+- **Network selection** (Ethereum Sepolia, Arbitrum Sepolia, or custom)
+- **Automatic deployment** with contract verification
 
-## Installation
-Install dependencies and compile contracts:
-```bash
-make install
-```
+That's it! Your EVVM virtual blockchain is now deployed and verified on your chosen host blockchain.
 
-### Configuration Setup
-Before deploying, you need to configure the deployment parameters. You can do this in two ways:
+## Manual Configuration (Alternative)
 
-#### Option 1: Automated Setup (Recommended)
-Run the interactive setup script:
-```bash
-./evvm-init.sh
-```
-This will create the necessary configuration files:
-- `input/address.json` - Administrator addresses
-- `input/evvmBasicMetadata.json` - EVVM name, ID, and token details
-- `input/evvmAdvancedMetadata.json` - Supply and reward parameters
-
-#### Option 2: Manual Configuration
-Manually create the required JSON files in the `input/` directory:
+If you prefer manual control over configuration, create these files in `input/`:
 
 **input/address.json**:
 ```json
@@ -161,73 +153,54 @@ Deploy contracts to local testnet:
 make deployLocalTestnet
 ```
 
-## Deployment
-**Important**: Before deploying, ensure you have imported your private key securely:
-```bash
-cast wallet import defaultKey --interactive
-```
+## Manual Deployment
 
-> **Tip**: If you use a different alias instead of `defaultKey`, update the `--account` parameter in the deployment commands accordingly.
+If you prefer to deploy manually after configuration:
 
-Deploy contracts to Ethereum Sepolia testnet:
 ```bash
+# Ethereum Sepolia
 make deployTestnet NETWORK=eth
-```
-Deploy contracts to Arbitrum Sepolia testnet:
-```bash
-make deployTestnet NETWORK=arb
-```
 
-### Custom Network Deployment
-For custom RPC endpoints, use Forge directly:
-```bash
+# Arbitrum Sepolia  
+make deployTestnet NETWORK=arb
+
+# Custom RPC
 forge script script/DeployTestnet.s.sol:DeployTestnet \
     --rpc-url <YOUR_RPC_URL> \
     --account defaultKey \
     --broadcast \
     --verify \
-    --etherscan-api-key $ETHERSCAN_API \
-    -vvvvvv
+    --etherscan-api-key $ETHERSCAN_API
 ```
 
-> **Note**: Replace `defaultKey` with your chosen alias if you used a different name when importing your wallet.
-
-> **Note**: Ensure you have configured the deployment parameters using `./evvm-init.sh` or manually created the configuration files before deploying.
-
-## Compilation and Testing
-Recompile contracts:
+## Local Development
 ```bash
-make compile
-```
-Check contract sizes:
-```bash
-make seeSizes
+make anvil                # Start local blockchain
+make deployLocalTestnet   # Deploy to local chain
 ```
 
-## Available Commands
-Get help with all available commands:
+## Development Commands
 ```bash
-make help
+make install     # Install dependencies and compile
+make compile     # Recompile contracts
+make seeSizes    # Check contract sizes
+make help        # Show all available commands
 ```
-
-## Configuration Files
-- `foundry.toml` — Foundry project configuration with remappings
-- `package.json` — Node.js dependencies for cross-chain protocols
-- `makefile` — Build and deployment automation
-- `wake.toml` — Wake tooling configuration
-- `evvm-init.sh` — Interactive setup wizard for deployment configuration
-- `input/` — Directory containing deployment configuration files:
-  - `address.json` — Administrator and key addresses
-  - `evvmBasicMetadata.json` — EVVM name, ID, and token metadata
-  - `evvmAdvancedMetadata.json` — Supply and reward parameters
 
 ## Contract Architecture
-The EVVM ecosystem consists of four main contracts:
+The EVVM ecosystem consists of five main contracts:
 - **Evvm.sol**: Core virtual machine implementation
 - **NameService.sol**: Domain name resolution system  
 - **Staking.sol**: Token staking and rewards mechanism
 - **Estimator.sol**: Staking rewards estimation and calculation
-- **Treasury.sol**: Manages deposits and withdrawals of ETH and ERC20 tokens, ensuring secure integration with the EVVM ecosystem.
+- **Treasury.sol**: Manages deposits and withdrawals of ETH and ERC20 tokens
+
+## Configuration Files
+Key files for EVVM deployment:
+- `evvm-init.sh` — Interactive setup wizard
+- `input/` — Generated configuration files (address.json, evvmBasicMetadata.json, evvmAdvancedMetadata.json)
+- `foundry.toml` — Foundry project configuration
+- `makefile` — Build and deployment automation
 
 ## Contributing
 1. Fork the repository
