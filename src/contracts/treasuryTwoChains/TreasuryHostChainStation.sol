@@ -123,11 +123,15 @@ contract TreasuryHostChainStation is
     }
 
     function setExternalChainAddress(
-        bytes32 externalChainStationAddressBytes32,
+        address externalChainStationAddress,
         string memory externalChainStationAddressString
     ) external onlyAdmin {
-        hyperlane.externalChainStationAddress = externalChainStationAddressBytes32;
-        layerZero.externalChainStationAddress = externalChainStationAddressBytes32;
+        hyperlane.externalChainStationAddress = bytes32(
+            uint256(uint160(externalChainStationAddress))
+        );
+        layerZero.externalChainStationAddress = bytes32(
+            uint256(uint160(externalChainStationAddress))
+        );
         axelar.externalChainStationAddress = externalChainStationAddressString;
         _setPeer(
             layerZero.externalChainStationEid,

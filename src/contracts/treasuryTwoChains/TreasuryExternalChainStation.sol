@@ -29,9 +29,6 @@ contract TreasuryExternalChainStation is
     OAppOptionsType3,
     AxelarExecutable
 {
-    /// @notice Address of the EVVM core contract
-    address evvmAddress;
-
     AddressTypeProposal admin;
 
     AddressTypeProposal fisherExecutor;
@@ -74,12 +71,7 @@ contract TreasuryExternalChainStation is
         _;
     }
 
-    /**
-     * @notice Initialize Treasury with EVVM contract address
-     * @param _evvmAddress Address of the EVVM core contract
-     */
     constructor(
-        address _evvmAddress,
         address _admin,
         CrosschainConfig memory _crosschainConfig
     )
@@ -87,7 +79,6 @@ contract TreasuryExternalChainStation is
         Ownable(_admin)
         AxelarExecutable(_crosschainConfig.gatewayAddress)
     {
-        evvmAddress = _evvmAddress;
         admin = AddressTypeProposal({
             current: _admin,
             proposal: address(0),
@@ -114,11 +105,15 @@ contract TreasuryExternalChainStation is
     }
 
     function setHostChainAddress(
-        bytes32 hostChainStationAddressBytes32,
+        address hostChainStationAddress,
         string memory hostChainStationAddressString
     ) external onlyAdmin {
-        hyperlane.hostChainStationAddress = hostChainStationAddressBytes32;
-        layerZero.hostChainStationAddress = hostChainStationAddressBytes32;
+        hyperlane.hostChainStationAddress = bytes32(
+            uint256(uint160(hostChainStationAddress))
+        );
+        layerZero.hostChainStationAddress = bytes32(
+            uint256(uint160(hostChainStationAddress))
+        );
         axelar.hostChainStationAddress = hostChainStationAddressString;
         _setPeer(
             layerZero.hostChainStationEid,
@@ -487,10 +482,6 @@ contract TreasuryExternalChainStation is
         return nextFisherExecutionNonce[user];
     }
 
-    function getEvvmAddress() external view returns (address) {
-        return evvmAddress;
-    }
-
     function getHyperlaneConfig()
         external
         view
@@ -517,16 +508,13 @@ contract TreasuryExternalChainStation is
 
     // Internal Functions //
 
-    function decodeAndGive(
-        bytes memory payload
-    ) internal {
+    function decodeAndGive(bytes memory payload) internal {
         (address token, address toAddress, uint256 amount) = decodePayload(
             payload
         );
-        if (token == address(0)) 
-        SafeTransferLib.safeTransferETH(msg.sender, amount);
-        else
-            IERC20(token).transfer(toAddress, amount);
+        if (token == address(0))
+            SafeTransferLib.safeTransferETH(msg.sender, amount);
+        else IERC20(token).transfer(toAddress, amount);
     }
 
     function verifyAndDepositERC20(address token, uint256 amount) internal {
