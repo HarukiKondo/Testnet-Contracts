@@ -1,6 +1,6 @@
 {
-  "EvvmName": "EVVM",
-  "EvvmID": 8888888,
+  "EvvmName": "Test",
+  "EvvmID": 1,
   "principalTokenName": "Mate token",
   "principalTokenSymbol": "MATE"
 }
