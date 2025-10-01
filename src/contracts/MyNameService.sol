@@ -1,40 +1,45 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import {SignatureRecover} from "@EVVM/testnet/lib/SignatureRecover.sol";
 import {AdvancedStrings} from "@EVVM/testnet/lib/AdvancedStrings.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {Evvm} from "@EVVM/testnet/contracts/evvm/Evvm.sol";
+
+// ===== エラー =====  
+library ErrorsLib {
+    error NonceAlreadyUsed();
+    error SenderIsNotAdmin();
+    error UserIsNotOwnerOfIdentity();
+    error InvalidUsername(bytes1 code);
+    error PreRegistrationNotValid();
+    error IdentityNotFound();
+    error OfferNotValid();
+}
 
 /**
- * SignatureUtils ライブラリ
+ * @title 署名検証ユーティリティ
  */
 library SignatureUtils {
-
-    /**
-     * @dev using EIP-191 (https://eips.ethereum.org/EIPS/eip-191) can be used to sign and
-     *       verify messages, the next functions are used to verify the messages signed
-     *       by the users for SERVICE OPERATIONS (not EVVM payments)
-     */
     function verifyMessageSignedForPreRegistrationUsername(
         address signer,
         bytes32 _hashUsername,
         uint256 _nameServiceNonce,
         bytes memory signature
     ) internal pure returns (bool) {
-        return
-            SignatureRecover.signatureVerification(
-                string.concat(
-                    "5d232a55",                                    // Function identifier
-                    ",",
-                    AdvancedStrings.bytes32ToString(_hashUsername),
-                    ",",
-                    Strings.toString(_nameServiceNonce)
-                ),
-                signature,
-                signer
-            );
+        return SignatureRecover.signatureVerification(
+            string.concat(
+                "5d232a55",
+                ",",
+                AdvancedStrings.bytes32ToString(_hashUsername),
+                ",",
+                Strings.toString(_nameServiceNonce)
+            ),
+            signature,
+            signer
+        );
     }
-
+    
     function verifyMessageSignedForRegistrationUsername(
         address signer,
         string memory _username,
@@ -42,54 +47,147 @@ library SignatureUtils {
         uint256 _nameServiceNonce,
         bytes memory signature
     ) internal pure returns (bool) {
-        return
-            SignatureRecover.signatureVerification(
-                string.concat(
-                    "afabc8db",                          // Unique function identifier
-                    ",",
-                    _username,
-                    ",",
-                    Strings.toString(_clowNumber),
-                    ",",
-                    Strings.toString(_nameServiceNonce)
-                ),
-                signature,
-                signer
-            );
+        return SignatureRecover.signatureVerification(
+            string.concat(
+                "afabc8db",
+                ",",
+                _username,
+                ",",
+                Strings.toString(_clowNumber),
+                ",",
+                Strings.toString(_nameServiceNonce)
+            ),
+            signature,
+            signer
+        );
     }
     
-    // Additional signature validation functions for all service operations...
-}
-
-/**
- * MyServiceSignatureUtils ライブラリ
- */ 
-library MyServiceSignatureUtils {
-    // Function identifier for your service operation (generate unique 8-character hex)
-    string constant SERVICE_FUNCTION_ID = "a1b2c3d4"; // Replace with your unique ID
-    
-    /**
-     * @dev Validates SERVICE signature (not EVVM payment signature)
-     * @param signer Expected signer address
-     * @param data Service-specific data
-     * @param nonce Service nonce for replay protection
-     * @param signature User's SERVICE signature
-     */
-    function verifyServiceOperationSignature(
+    function verifyMessageSignedForAddCustomMetadata(
         address signer,
-        string memory data,
-        uint256 nonce,
+        string memory _identity,
+        string memory _metadata,
+        uint256 _nameServiceNonce,
         bytes memory signature
     ) internal pure returns (bool) {
         return SignatureRecover.signatureVerification(
             string.concat(
-                SERVICE_FUNCTION_ID,
+                "b3c4d5e6",
                 ",",
-                Strings.toHexString(uint256(uint160(signer)), 20),
+                _identity,
                 ",",
-                data,
+                _metadata,
                 ",",
-                Strings.toString(nonce)
+                Strings.toString(_nameServiceNonce)
+            ),
+            signature,
+            signer
+        );
+    }
+    
+    function verifyMessageSignedForAddMetadataSlot(
+        address signer,
+        string memory _identity,
+        uint256 _numberOfSlots,
+        uint256 _nameServiceNonce,
+        bytes memory signature
+    ) internal pure returns (bool) {
+        return SignatureRecover.signatureVerification(
+            string.concat(
+                "c4d5e6f7",
+                ",",
+                _identity,
+                ",",
+                Strings.toString(_numberOfSlots),
+                ",",
+                Strings.toString(_nameServiceNonce)
+            ),
+            signature,
+            signer
+        );
+    }
+    
+    function verifyMessageSignedForMakeOffer(
+        address signer,
+        string memory _username,
+        uint256 _expireDate,
+        uint256 _amount,
+        uint256 _nameServiceNonce,
+        bytes memory signature
+    ) internal pure returns (bool) {
+        return SignatureRecover.signatureVerification(
+            string.concat(
+                "d5e6f7g8",
+                ",",
+                _username,
+                ",",
+                Strings.toString(_expireDate),
+                ",",
+                Strings.toString(_amount),
+                ",",
+                Strings.toString(_nameServiceNonce)
+            ),
+            signature,
+            signer
+        );
+    }
+    
+    function verifyMessageSignedForAcceptOffer(
+        address signer,
+        string memory _username,
+        uint256 _offerID,
+        uint256 _nameServiceNonce,
+        bytes memory signature
+    ) internal pure returns (bool) {
+        return SignatureRecover.signatureVerification(
+            string.concat(
+                "e6f7g8h9",
+                ",",
+                _username,
+                ",",
+                Strings.toString(_offerID),
+                ",",
+                Strings.toString(_nameServiceNonce)
+            ),
+            signature,
+            signer
+        );
+    }
+    
+    function verifyMessageSignedForCancelOffer(
+        address signer,
+        string memory _username,
+        uint256 _offerID,
+        uint256 _nameServiceNonce,
+        bytes memory signature
+    ) internal pure returns (bool) {
+        return SignatureRecover.signatureVerification(
+            string.concat(
+                "f7g8h9i0",
+                ",",
+                _username,
+                ",",
+                Strings.toString(_offerID),
+                ",",
+                Strings.toString(_nameServiceNonce)
+            ),
+            signature,
+            signer
+        );
+    }
+    
+    function verifyMessageSignedForRenewUsername(
+        address signer,
+        string memory _username,
+        uint256 _nameServiceNonce,
+        bytes memory signature
+    ) internal pure returns (bool) {
+        return SignatureRecover.signatureVerification(
+            string.concat(
+                "g8h9i0j1",
+                ",",
+                _username,
+                ",",
+                Strings.toString(_nameServiceNonce)
             ),
             signature,
             signer
@@ -99,151 +197,773 @@ library MyServiceSignatureUtils {
 
 /**
  * @title EVVM Name Service Contract
- * @notice EVVM上でユーザーにわかりやすい名前を提供するスマートコントラクトです。
- * @dev EVVMサービスと正しく連携する方法を示します。
- *
- * EVVM連携機能:
- * - 支払いにトークン抽象化を使用（ERC-20トークンを別途用意する必要なし）
- * - すべての操作でERC-191署名をチェック
- * - トランザクション実行時にFisher報酬を分配
- * - 2種類のノンス（サービス用とEVVM用）を使用
- * - EVVMのステーキングや報酬システムと連携
- * 
- * サービス機能:
- * - ユーザー名登録時のフロントランニングを防止（コミット・リビール方式）
- * - ユーザーが独自のメタデータを追加可能（スキーマで検証）
- * - 経済性を備えたユーザー名マーケットプレイス
- * - ガバナンスのセキュリティ向上のためのタイムディレイを採用
- * 
- * エコシステム連携:
- * - EVVMコア: 支払い処理と報酬分配を担当
- * - ステーキングシステム: Fisherの調整と報酬分配
- * - 他サービス: 他のコントラクトがユーザー名を参照可能
+ * @notice 人間が読めるID管理とマーケットプレイス機能を提供
  */
-contract MyNameService {
-    // ライブラリを適用
-    using MyServiceSignatureUtils for *;
-
-    /// @dev SERVICE nonce mapping - tracks used nonces per address for service operations
+contract NameService {
+    
+    // ===== 定数 =====
+    address private constant PRINCIPAL_TOKEN_ADDRESS = 
+        0x0000000000000000000000000000000000000001;
+    
+    // ===== 構造体 =====
+    
+    struct AddressTypeProposal {
+        address current;
+        address proposal;
+        uint256 timeToAccept;
+    }
+    
+    struct IdentityBaseMetadata {
+        address owner;
+        uint256 expireDate;
+        uint256 customMetadataMaxSlots;
+        uint256 offerMaxSlots;
+        bytes1 flagNotAUsername; // 0x01: 事前登録, 0x00: 通常
+    }
+    
+    struct OfferMetadata {
+        address offerer;
+        uint256 expireDate;
+        uint256 amount;
+    }
+    
+    // ===== 状態変数 =====
+    
+    AddressTypeProposal public admin;
+    AddressTypeProposal public evvmAddress;
+    
+    mapping(string => IdentityBaseMetadata) private identityDetails;
+    mapping(string => mapping(uint256 => string)) private identityCustomMetadata;
+    mapping(string => mapping(uint256 => OfferMetadata)) private usernameOffers;
     mapping(address => mapping(uint256 => bool)) private nameServiceNonce;
-    mapping(address => uint256) public userNonces;
+    
+    uint256 public mateTokenLockedForWithdrawOffers;
 
-    /// @dev Ensures the SERVICE nonce hasn't been used before
+    // ===== イベント =====
+    
+    event PreRegistrationCreated(address indexed user, bytes32 hash);
+    event UsernameRegistered(address indexed user, string username);
+    event CustomMetadataAdded(string indexed username, string metadata);
+    event MetadataSlotsAdded(string indexed username, uint256 slots);
+    event OfferMade(string indexed username, address indexed offerer, uint256 amount, uint256 offerID);
+    event OfferAccepted(string indexed username, address indexed from, address indexed to, uint256 amount);
+    event OfferCancelled(string indexed username, address indexed offerer, uint256 offerID);
+    event UsernameRenewed(string indexed username, address indexed owner);
+    event AdminProposed(address indexed newAdmin);
+    event AdminChanged(address indexed newAdmin);
+    event EvvmAddressProposed(address indexed newEvvm);
+    event EvvmAddressChanged(address indexed newEvvm);
+    
+    // ===== モディファイア =====
+    
+    modifier onlyAdmin() {
+        if (msg.sender != admin.current) revert ErrorsLib.SenderIsNotAdmin();
+        _;
+    }
+    
+    modifier onlyOwnerOfIdentity(address _user, string memory _identity) {
+        if (identityDetails[_identity].owner != _user)
+            revert ErrorsLib.UserIsNotOwnerOfIdentity();
+        _;
+    }
+    
     modifier verifyIfNonceIsAvailable(address _user, uint256 _nonce) {
         if (nameServiceNonce[_user][_nonce])
             revert ErrorsLib.NonceAlreadyUsed();
         _;
     }
-
+    
+    // ===== コンストラクタ =====
+    
+    constructor(address _evvmAddress, address _admin) {
+        evvmAddress.current = _evvmAddress;
+        admin.current = _admin;
+    }
+    
+    // ===== ユーザー名登録機能 =====
+    
     /**
-     * @notice 2つの署名検証を行いサービスを実行します
-     * @param user ユーザーアドレス
-     * @param data サービス固有のデータ
-     * @param nonce サービス用ノンス
-     * @param signature サービス操作用のSERVICE署名
-     * @param priorityFee_EVVM EVVMの優先手数料
-     * @param nonce_EVVM EVVM用ノンス
-     * @param priorityFlag_EVVM EVVMの非同期/同期フラグ
-     * @param signature_EVVM 支払い認証用のEVVM支払い署名
+     * @notice ステップ1: ハッシュコミットメントで事前登録
      */
-    function executeService(
+    function preRegistrationUsername(
         address user,
-        string memory data,
+        bytes32 hashPreRegisteredUsername,
         uint256 nonce,
-        bytes memory signature,           // SERVICE signature
+        bytes memory signature,
         uint256 priorityFee_EVVM,
         uint256 nonce_EVVM,
         bool priorityFlag_EVVM,
-        bytes memory signature_EVVM      // EVVM payment signature
-    ) external verifyIfNonceIsAvailable(user, nonce) {
-        // 1. サービスの署名を検証
+        bytes memory signature_EVVM
+    ) public verifyIfNonceIsAvailable(user, nonce) {
+        // サービス署名の検証
         require(
-            MyServiceSignatureUtils.verifyServiceOperationSignature(
+            SignatureUtils.verifyMessageSignedForPreRegistrationUsername(
                 user,
-                data,
+                hashPreRegisteredUsername,
                 nonce,
                 signature
             ),
             "Invalid service signature"
         );
         
-        // 2. EVVM上の署名データで決済を行う
-        makeServicePayment(
-            user,
-            PRINCIPAL_TOKEN_ADDRESS,     // Token for payment
-            SERVICE_FEE,                 // Service fee amount
-            priorityFee_EVVM,           // Priority fee
-            priorityFlag_EVVM,          // Async/sync flag
-            nonce_EVVM,                 // EVVM nonce
-            signature_EVVM              // EVVM payment signature
-        );
-        
-        // 3. 実際のサービスロジックを実行する(dataにバイトコードが格納されているのでそれを実行する)
-        _performServiceLogic(user, data);
-        
-        // 4. Mark service nonce as used
-        serviceNonce[user][nonce] = true;
-    }
-
-    /**
-     *
-     */
-    function preRegistrationUsername(
-        address user,
-        bytes32 hashPreRegisteredUsername,
-        uint256 nonce,                    // SERVICE nonce
-        bytes memory signature,           // SERVICE signature
-        uint256 priorityFee_EVVM,
-        uint256 nonce_EVVM,              // EVVM nonce (handled by EVVM contract)
-        bool priorityFlag_EVVM,
-        bytes memory signature_EVVM      // EVVM signature (validated by EVVM contract)
-    ) public verifyIfNonceIsAvailable(user, nonce) {
-        // Validate SERVICE signature with SERVICE nonce
-        require(
-            SignatureUtils.verifyMessageSignedForPreRegistrationUsername(
-                user,
-                hashPreRegisteredUsername,
-                nonce,              // SERVICE nonce used in service signature
-                signature           // SERVICE signature
-            ),
-            "Invalid service signature"
-        );
-
-        // EVVM handles its own nonce validation when processing payment
+        // 決済処理
         makePay(
             user,
             getPricePerRegistration(),
             priorityFee_EVVM,
-            nonce_EVVM,         // EVVM nonce - validated by EVVM contract
+            nonce_EVVM,
             priorityFlag_EVVM,
-            signature_EVVM      // EVVM signature - validated by EVVM contract
+            signature_EVVM
         );
-
-        // Mark SERVICE nonce as used
+        
+        // 事前登録キーの作成
+        string memory key = string.concat(
+            "@",
+            AdvancedStrings.bytes32ToString(hashPreRegisteredUsername)
+        );
+        
+        // 30分間有効な事前登録を作成
+        identityDetails[key] = IdentityBaseMetadata({
+            owner: user,
+            expireDate: block.timestamp + 30 minutes,
+            customMetadataMaxSlots: 0,
+            offerMaxSlots: 0,
+            flagNotAUsername: 0x01
+        });
+        
+        // nonceを使用済みとしてマーク
         nameServiceNonce[user][nonce] = true;
-    }
-
-    /**
-     * @notice Checks if a SERVICE nonce has been used by a specific user
-     * @dev Prevents replay attacks by tracking used service nonces per user
-     * @param _user Address of the user to check
-     * @param _nonce Service nonce value to verify
-     * @return True if the nonce has been used, false if still available
-     */
-    function checkIfNameServiceNonceIsAvailable(
-        address _user,
-        uint256 _nonce
-    ) public view returns (bool) {
-        return nameServiceNonce[_user][_nonce];
-    }
-
-    function validateSyncNonce(address user, uint256 nonce) internal returns (bool) {
-        if (nonce != userNonces[user] + 1) {
-            return false;
+        
+        // フィッシャーに報酬
+        if (Evvm(evvmAddress.current).isAddressStaker(msg.sender)) {
+            makeCaPay(
+                msg.sender,
+                (50 * Evvm(evvmAddress.current).getRewardAmount()) + priorityFee_EVVM
+            );
         }
-        userNonces[user] = nonce;
-        return true;
+        
+        emit PreRegistrationCreated(user, hashPreRegisteredUsername);
     }
-
     
+    /**
+     * @notice ステップ2: 実際のユーザー名を公開して正式登録
+     */
+    function registrationUsername(
+        address user,
+        string memory username,
+        uint256 clowNumber,
+        uint256 nonce,
+        bytes memory signature,
+        uint256 priorityFee_EVVM,
+        uint256 nonce_EVVM,
+        bool priorityFlag_EVVM,
+        bytes memory signature_EVVM
+    ) public verifyIfNonceIsAvailable(user, nonce) {
+        // サービス署名の検証
+        require(
+            SignatureUtils.verifyMessageSignedForRegistrationUsername(
+                user,
+                username,
+                clowNumber,
+                nonce,
+                signature
+            ),
+            "Invalid service signature"
+        );
+        
+        // ユーザー名の形式検証
+        isValidUsername(username);
+        
+        // 事前登録の検証
+        string memory _key = string.concat(
+            "@",
+            AdvancedStrings.bytes32ToString(hashUsername(username, clowNumber))
+        );
+        
+        if (identityDetails[_key].owner != user ||
+            identityDetails[_key].expireDate < block.timestamp) {
+            revert ErrorsLib.PreRegistrationNotValid();
+        }
+        
+        // 決済処理
+        makePay(
+            user,
+            getPricePerRegistration(),
+            priorityFee_EVVM,
+            nonce_EVVM,
+            priorityFlag_EVVM,
+            signature_EVVM
+        );
+        
+        // 正式登録(366日間有効)
+        identityDetails[username] = IdentityBaseMetadata({
+            owner: user,
+            expireDate: block.timestamp + 366 days,
+            customMetadataMaxSlots: 0,
+            offerMaxSlots: 0,
+            flagNotAUsername: 0x00
+        });
+        
+        // 事前登録を削除
+        delete identityDetails[_key];
+        
+        // nonceを使用済みとしてマーク
+        nameServiceNonce[user][nonce] = true;
+        
+        // フィッシャーに報酬
+        if (Evvm(evvmAddress.current).isAddressStaker(msg.sender)) {
+            makeCaPay(
+                msg.sender,
+                (50 * Evvm(evvmAddress.current).getRewardAmount()) + priorityFee_EVVM
+            );
+        }
+        
+        emit UsernameRegistered(user, username);
+    }
+    
+    // ===== メタデータ管理 =====
+    
+    /**
+     * @notice カスタムメタデータの追加
+     */
+    function addCustomMetadataToIdentity(
+        address user,
+        string memory identity,
+        string memory metadata,
+        uint256 nonce,
+        bytes memory signature,
+        uint256 priorityFee_EVVM,
+        uint256 nonce_EVVM,
+        bool priorityFlag_EVVM,
+        bytes memory signature_EVVM
+    ) public 
+        onlyOwnerOfIdentity(user, identity)
+        verifyIfNonceIsAvailable(user, nonce) 
+    {
+        // 署名検証
+        require(
+            SignatureUtils.verifyMessageSignedForAddCustomMetadata(
+                user,
+                identity,
+                metadata,
+                nonce,
+                signature
+            ),
+            "Invalid service signature"
+        );
+        
+        // メタデータ形式の検証: [schema]:[subschema]>[value]
+        require(isValidMetadataFormat(metadata), "Invalid metadata format");
+        
+        // スロットの確認と更新
+        uint256 currentSlot = identityDetails[identity].customMetadataMaxSlots;
+        require(currentSlot > 0, "No available slots");
+        
+        // メタデータを保存
+        identityCustomMetadata[identity][currentSlot - 1] = metadata;
+        identityDetails[identity].customMetadataMaxSlots--;
+        
+        // 決済処理
+        makePay(
+            user,
+            getPriceToAddCustomMetadata(),
+            priorityFee_EVVM,
+            nonce_EVVM,
+            priorityFlag_EVVM,
+            signature_EVVM
+        );
+        
+        nameServiceNonce[user][nonce] = true;
+        
+        // フィッシャーに報酬
+        if (Evvm(evvmAddress.current).isAddressStaker(msg.sender)) {
+            makeCaPay(
+                msg.sender,
+                Evvm(evvmAddress.current).getRewardAmount() + priorityFee_EVVM
+            );
+        }
+        
+        emit CustomMetadataAdded(identity, metadata);
+    }
+    
+    /**
+     * @notice メタデータスロットの追加購入
+     */
+    function addCustomMetadataSlotToIdentity(
+        address user,
+        string memory identity,
+        uint256 numberOfSlotsToAdd,
+        uint256 nonce,
+        bytes memory signature,
+        uint256 priorityFee_EVVM,
+        uint256 nonce_EVVM,
+        bool priorityFlag_EVVM,
+        bytes memory signature_EVVM
+    ) public 
+        onlyOwnerOfIdentity(user, identity)
+        verifyIfNonceIsAvailable(user, nonce) 
+    {
+        // 署名検証
+        require(
+            SignatureUtils.verifyMessageSignedForAddMetadataSlot(
+                user,
+                identity,
+                numberOfSlotsToAdd,
+                nonce,
+                signature
+            ),
+            "Invalid service signature"
+        );
+        
+        // 決済処理
+        makePay(
+            user,
+            getPriceToAddCustomMetadata() * numberOfSlotsToAdd,
+            priorityFee_EVVM,
+            nonce_EVVM,
+            priorityFlag_EVVM,
+            signature_EVVM
+        );
+        
+        // スロット数を増加
+        identityDetails[identity].customMetadataMaxSlots += numberOfSlotsToAdd;
+        
+        nameServiceNonce[user][nonce] = true;
+        
+        // フィッシャーに報酬
+        if (Evvm(evvmAddress.current).isAddressStaker(msg.sender)) {
+            makeCaPay(
+                msg.sender,
+                Evvm(evvmAddress.current).getRewardAmount() + priorityFee_EVVM
+            );
+        }
+        
+        emit MetadataSlotsAdded(identity, numberOfSlotsToAdd);
+    }
+    
+    // ===== マーケットプレイス機能 =====
+    
+    /**
+     * @notice ユーザー名にオファーを出す
+     */
+    function makeOffer(
+        address user,
+        string memory username,
+        uint256 expireDate,
+        uint256 amount,
+        uint256 nonce,
+        bytes memory signature,
+        uint256 priorityFee_EVVM,
+        uint256 nonce_EVVM,
+        bool priorityFlag_EVVM,
+        bytes memory signature_EVVM
+    ) public verifyIfNonceIsAvailable(user, nonce) {
+        // ユーザー名の存在確認
+        require(verifyIfIdentityExists(username), "Username not found");
+        require(identityDetails[username].owner != user, "Cannot offer own username");
+        
+        // 署名検証
+        require(
+            SignatureUtils.verifyMessageSignedForMakeOffer(
+                user,
+                username,
+                expireDate,
+                amount,
+                nonce,
+                signature
+            ),
+            "Invalid service signature"
+        );
+        
+        // 決済処理(オファー金額をロック)
+        makePay(
+            user,
+            amount,
+            priorityFee_EVVM,
+            nonce_EVVM,
+            priorityFlag_EVVM,
+            signature_EVVM
+        );
+        
+        // オファーIDの取得
+        uint256 offerID = identityDetails[username].offerMaxSlots;
+        
+        // 0.5%のマーケットプレイス手数料を控除
+        uint256 amountAfterFee = (amount * 995) / 1000;
+        
+        // オファーを保存
+        usernameOffers[username][offerID] = OfferMetadata({
+            offerer: user,
+            expireDate: expireDate,
+            amount: amountAfterFee
+        });
+        
+        // オファースロットを増加
+        identityDetails[username].offerMaxSlots++;
+        
+        // ロックされたトークンを追跡
+        mateTokenLockedForWithdrawOffers += amountAfterFee + (amount / 800);
+        
+        nameServiceNonce[user][nonce] = true;
+        
+        // フィッシャーに報酬(オファー金額の0.125%)
+        if (Evvm(evvmAddress.current).isAddressStaker(msg.sender)) {
+            makeCaPay(
+                msg.sender,
+                Evvm(evvmAddress.current).getRewardAmount() +
+                ((amount * 125) / 100_000) +
+                priorityFee_EVVM
+            );
+        }
+        
+        emit OfferMade(username, user, amount, offerID);
+    }
+    
+    /**
+     * @notice オファーを受け入れる(ユーザー名を売却)
+     */
+    function acceptOffer(
+        address user,
+        string memory username,
+        uint256 offerID,
+        uint256 nonce,
+        bytes memory signature
+    ) public 
+        onlyOwnerOfIdentity(user, username)
+        verifyIfNonceIsAvailable(user, nonce) 
+    {
+        // 署名検証
+        require(
+            SignatureUtils.verifyMessageSignedForAcceptOffer(
+                user,
+                username,
+                offerID,
+                nonce,
+                signature
+            ),
+            "Invalid service signature"
+        );
+        
+        // オファーの有効性確認
+        OfferMetadata memory offer = usernameOffers[username][offerID];
+        require(offer.offerer != address(0), "Offer not found");
+        require(offer.expireDate > block.timestamp, "Offer expired");
+        
+        address previousOwner = user;
+        address newOwner = offer.offerer;
+        uint256 saleAmount = offer.amount;
+        
+        // 所有権の移転
+        identityDetails[username].owner = newOwner;
+        identityDetails[username].expireDate = block.timestamp + 366 days;
+        
+        // オファーを削除
+        delete usernameOffers[username][offerID];
+        
+        // ロックを解除
+        mateTokenLockedForWithdrawOffers -= saleAmount;
+        
+        // 売却金額を元の所有者に送金
+        makeCaPay(previousOwner, saleAmount);
+        
+        nameServiceNonce[user][nonce] = true;
+        
+        emit OfferAccepted(username, previousOwner, newOwner, saleAmount);
+    }
+    
+    /**
+     * @notice オファーをキャンセル
+     */
+    function cancelOffer(
+        address user,
+        string memory username,
+        uint256 offerID,
+        uint256 nonce,
+        bytes memory signature
+    ) public verifyIfNonceIsAvailable(user, nonce) {
+        // 署名検証
+        require(
+            SignatureUtils.verifyMessageSignedForCancelOffer(
+                user,
+                username,
+                offerID,
+                nonce,
+                signature
+            ),
+            "Invalid service signature"
+        );
+        
+        // オファーの確認
+        OfferMetadata memory offer = usernameOffers[username][offerID];
+        require(offer.offerer == user, "Not your offer");
+        
+        uint256 refundAmount = offer.amount;
+        
+        // オファーを削除
+        delete usernameOffers[username][offerID];
+        
+        // ロックを解除
+        mateTokenLockedForWithdrawOffers -= refundAmount;
+        
+        // ロックされたトークンを返金
+        makeCaPay(user, refundAmount);
+        
+        nameServiceNonce[user][nonce] = true;
+        
+        emit OfferCancelled(username, user, offerID);
+    }
+    
+    // ===== 更新機能 =====
+    
+    /**
+     * @notice ユーザー名の更新(366日延長)
+     */
+    function renewUsername(
+        address user,
+        string memory username,
+        uint256 nonce,
+        bytes memory signature,
+        uint256 priorityFee_EVVM,
+        uint256 nonce_EVVM,
+        bool priorityFlag_EVVM,
+        bytes memory signature_EVVM
+    ) public 
+        onlyOwnerOfIdentity(user, username)
+        verifyIfNonceIsAvailable(user, nonce) 
+    {
+        // 署名検証
+        require(
+            SignatureUtils.verifyMessageSignedForRenewUsername(
+                user,
+                username,
+                nonce,
+                signature
+            ),
+            "Invalid service signature"
+        );
+        
+        // 動的価格の計算
+        uint256 renewPrice = seePriceToRenew(username);
+        
+        // 決済処理
+        makePay(
+            user,
+            renewPrice,
+            priorityFee_EVVM,
+            nonce_EVVM,
+            priorityFlag_EVVM,
+            signature_EVVM
+        );
+        
+        // 有効期限を延長
+        identityDetails[username].expireDate = block.timestamp + 366 days;
+        
+        nameServiceNonce[user][nonce] = true;
+        
+        // フィッシャーに報酬
+        if (Evvm(evvmAddress.current).isAddressStaker(msg.sender)) {
+            makeCaPay(
+                msg.sender,
+                Evvm(evvmAddress.current).getRewardAmount() + priorityFee_EVVM
+            );
+        }
+        
+        emit UsernameRenewed(username, user);
+    }
+    
+    // ===== 価格設定関数 =====
+    
+    function getPricePerRegistration() public view returns (uint256) {
+        return Evvm(evvmAddress.current).getRewardAmount() * 100;
+    }
+    
+    function getPriceToAddCustomMetadata() public view returns (uint256) {
+        return 10 * Evvm(evvmAddress.current).getRewardAmount();
+    }
+    
+    /**
+     * @notice 市場駆動型の動的更新価格
+     */
+    function seePriceToRenew(string memory _identity) public view returns (uint256 price) {
+        if (identityDetails[_identity].expireDate >= block.timestamp) {
+            // 有効なオファーから市場価値を判断
+            for (uint256 i = 0; i < identityDetails[_identity].offerMaxSlots; i++) {
+                if (usernameOffers[_identity][i].expireDate > block.timestamp &&
+                    usernameOffers[_identity][i].offerer != address(0)) {
+                    if (usernameOffers[_identity][i].amount > price) {
+                        price = usernameOffers[_identity][i].amount;
+                    }
+                }
+            }
+            
+            if (price == 0) {
+                price = 500 * 10 ** 18;  // ベース価格
+            } else {
+                uint256 mateReward = Evvm(evvmAddress.current).getRewardAmount();
+                // 市場価格の0.5%、上限は500,000 * getRewardAmount()
+                price = ((price * 5) / 1000) > (500000 * mateReward)
+                    ? (500000 * mateReward)
+                    : ((price * 5) / 1000);
+            }
+        } else {
+            // 期限切れの場合
+            price = 500_000 * Evvm(evvmAddress.current).getRewardAmount();
+        }
+    }
+    
+    // ===== EVVM統合ヘルパー =====
+    
+    function makePay(
+        address user,
+        uint256 amount,
+        uint256 priorityFee,
+        uint256 nonce,
+        bool priorityFlag,
+        bytes memory signature
+    ) internal {
+        if (priorityFlag) {
+            Evvm(evvmAddress.current).payStaker_async(
+                user,
+                address(this),
+                "",
+                PRINCIPAL_TOKEN_ADDRESS,
+                amount,
+                priorityFee,
+                nonce,
+                address(this),
+                signature
+            );
+        } else {
+            Evvm(evvmAddress.current).payStaker_sync(
+                user,
+                address(this),
+                "",
+                PRINCIPAL_TOKEN_ADDRESS,
+                amount,
+                priorityFee,
+                address(this),
+                signature
+            );
+        }
+    }
+    
+    function makeCaPay(address user, uint256 amount) internal {
+        Evvm(evvmAddress.current).caPay(user, PRINCIPAL_TOKEN_ADDRESS, amount);
+    }
+    
+    // ===== バリデーション関数 =====
+    
+    function isValidUsername(string memory username) internal pure {
+        bytes memory usernameBytes = bytes(username);
+        
+        if (usernameBytes.length < 4) revert ErrorsLib.InvalidUsername(0x01);
+        if (!_isLetter(usernameBytes[0])) revert ErrorsLib.InvalidUsername(0x02);
+        
+        for (uint256 i = 0; i < usernameBytes.length; i++) {
+            if (!_isDigit(usernameBytes[i]) && !_isLetter(usernameBytes[i])) {
+                revert ErrorsLib.InvalidUsername(0x03);
+            }
+        }
+    }
+    
+    function isValidMetadataFormat(string memory metadata) internal pure returns (bool) {
+        // 形式: [schema]:[subschema]>[value]
+        bytes memory metadataBytes = bytes(metadata);
+        bool hasColon = false;
+        bool hasGreater = false;
+        
+        for (uint256 i = 0; i < metadataBytes.length; i++) {
+            if (metadataBytes[i] == ":") hasColon = true;
+            if (metadataBytes[i] == ">") hasGreater = true;
+        }
+        
+        return hasColon && hasGreater;
+    }
+    
+    function _isLetter(bytes1 char) private pure returns (bool) {
+        return (char >= 0x41 && char <= 0x5A) || (char >= 0x61 && char <= 0x7A);
+    }
+    
+    function _isDigit(bytes1 char) private pure returns (bool) {
+        return (char >= 0x30 && char <= 0x39);
+    }
+    
+    function hashUsername(string memory username, uint256 clowNumber) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(username, clowNumber));
+    }
+    
+    // ===== ビュー関数 =====
+    
+    function verifyStrictAndGetOwnerOfIdentity(string memory username) 
+        public view returns (address) 
+    {
+        if (!verifyIfIdentityExists(username)) revert ErrorsLib.IdentityNotFound();
+        return identityDetails[username].owner;
+    }
+    
+    function verifyIfIdentityExists(string memory username) 
+        public view returns (bool) 
+    {
+        return identityDetails[username].owner != address(0) &&
+               identityDetails[username].flagNotAUsername == 0x00;
+    }
+    
+    function getCustomMetadata(string memory username, uint256 key) 
+        public view returns (string memory) 
+    {
+        return identityCustomMetadata[username][key];
+    }
+    
+    function checkIfNameServiceNonceIsAvailable(address user, uint256 nonce) 
+        public view returns (bool) 
+    {
+        return nameServiceNonce[user][nonce];
+    }
+    
+    function getIdentityDetails(string memory username) 
+        public view returns (IdentityBaseMetadata memory) 
+    {
+        return identityDetails[username];
+    }
+    
+    function getOffer(string memory username, uint256 offerID) 
+        public view returns (OfferMetadata memory) 
+    {
+        return usernameOffers[username][offerID];
+    }
+    
+    // ===== ガバナンス機能 =====
+    
+    function proposeAdmin(address _adminToPropose) public onlyAdmin {
+        admin.proposal = _adminToPropose;
+        admin.timeToAccept = block.timestamp + 1 days;
+        emit AdminProposed(_adminToPropose);
+    }
+    
+    function acceptProposeAdmin() public {
+        require(admin.proposal == msg.sender, "Not proposed admin");
+        require(block.timestamp >= admin.timeToAccept, "Time delay not passed");
+        
+        admin.current = admin.proposal;
+        admin.proposal = address(0);
+        admin.timeToAccept = 0;
+        
+        emit AdminChanged(msg.sender);
+    }
+    
+    function proposeEvvmAddress(address _evvmToPropose) public onlyAdmin {
+        evvmAddress.proposal = _evvmToPropose;
+        evvmAddress.timeToAccept = block.timestamp + 1 days;
+        emit EvvmAddressProposed(_evvmToPropose);
+    }
+    
+    function acceptProposeEvvmAddress() public onlyAdmin {
+        require(block.timestamp >= evvmAddress.timeToAccept, "Time delay not passed");
+        
+        evvmAddress.current = evvmAddress.proposal;
+        evvmAddress.proposal = address(0);
+        evvmAddress.timeToAccept = 0;
+        
+        emit EvvmAddressChanged(evvmAddress.current);
+    }
 }
